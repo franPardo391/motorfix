@@ -57,9 +57,9 @@ CREATE TABLE factura (
     fecha      DATE NOT NULL,
     mano_obra  DECIMAL(10,2) NOT NULL,
     repuestos  DECIMAL(10,2) NOT NULL,
-    subtotal   DECIMAL(10,2) NOT NULL,                                           -- mano_obra + repuestos
-    iva        DECIMAL(10,2) NOT NULL,                                           -- 21 % del subtotal
-    total      DECIMAL(10,2) NOT NULL,                                           -- subtotal + iva
+    base_imponible DECIMAL(10,2) NOT NULL,                                       -- mano_obra + repuestos
+    iva        DECIMAL(10,2) NOT NULL,                                           -- 21 % de la base imponible
+    total      DECIMAL(10,2) NOT NULL,                                           -- base imponible + iva
     id_cita    INT NOT NULL UNIQUE,                                              -- UNIQUE = una factura por cita (1:1)
     FOREIGN KEY (id_cita) REFERENCES cita(id_cita)
 ) ENGINE=INNODB;
