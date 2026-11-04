@@ -1,7 +1,7 @@
-  .vscode/
-  Thumbs.db
-  desktop.ini
-  *.log
-  BackEnd/prueba_usuario.php
-  BackEnd/prueba_cliente.php
-  BackEnd/prueba_factura.php
+.vscode/
+Thumbs.db
+desktop.ini
+*.log
+BackEnd/prueba_usuario.php
+BackEnd/prueba_cliente.php
+BackEnd/prueba_factura.php
