@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotorFix - Crear cuenta</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/login.css">                           <!-- Mismo CSS que el login -->
+    <script src="../js/registro.js"></script>                                 <!-- Su propio view controller -->
+</head>
+<body>
+    <main class="pantalla">
+
+        <section class="lateral">
+            <h1>MotorFix</h1>
+            <p>Crea tu cuenta y pide cita sin llamar al taller.</p>
+        </section>
+
+        <section class="formulario">
+            <h2>Crear cuenta</h2>
+
+            <label for="nombre">Nombre completo</label>
+            <input type="text" id="nombre">
+
+            <label for="dni">DNI</label>
+            <input type="text" id="dni" maxlength="9" placeholder="12345678Z">   <!-- 9 caracteres, como la BD -->
+
+            <label for="telefono">Teléfono</label>
+            <input type="tel" id="telefono">
+
+            <label for="direccion">Dirección</label>
+            <input type="text" id="direccion">
+
+            <label for="email">Email</label>
+            <input type="email" id="email">
+
+            <label for="password">Contraseña</label>
+            <input type="password" id="password">
+
+            <button type="button" onclick="registro()">Crear cuenta</button>     <!-- type=button: nunca submit -->
+
+            <p id="msg" class="msg"></p>
+
+            <p class="enlace">¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a></p>
+        </section>
+
+    </main>
+</body>
+</html>
