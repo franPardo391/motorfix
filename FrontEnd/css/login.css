@@ -1,0 +1,115 @@
+:root {                                   /* Variables de color del diseño v2 */
+    --mono:      #1F3A5C;                 /* azul marino: lateral y botón */
+    --asfalto:   #ECEEF1;                 /* fondo de página */
+    --blanco:    #FFFFFF;
+    --aceite:    #1A1F26;                 /* texto */
+    --texto-sec: #4A5563;
+    --linea:     #C9CED6;
+    --senal:     #F5B800;                 /* amarillo de señalización */
+    --freno:     #B42318;                 /* errores */
+    --ok:        #1E7B46;                 /* éxito */
+    --borde-input: #8A93A0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }   /* Reset básico */
+
+body {
+    font-family: 'Barlow', sans-serif;    /* Fuente de texto */
+    font-size: 15px;
+    color: var(--aceite);
+    background: var(--asfalto);
+}
+
+.pantalla {
+    display: flex;                        /* Dos mitades en fila */
+    min-height: 100vh;                    /* Toda la altura de la ventana */
+}
+
+/* ---- Mitad izquierda ---- */
+.lateral {
+    flex: 1;                              /* Ocupa la mitad */
+    background:
+        linear-gradient(rgba(31, 58, 92, 0.7), rgba(31, 58, 92, 0.7)),   /* Capa azul semitransparente encima */
+        url('../img/taller.jpg') center / cover no-repeat;                 /* La foto debajo, centrada y recortada */
+    color: var(--blanco);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;              /* Centrado vertical */
+}
+
+.lateral h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 60px;                      /* Titular del login */
+}
+
+.lateral h1::after {                      /* Raya amarilla bajo el titular */
+    content: '';
+    display: block;
+    width: 80px;
+    height: 6px;
+    background: var(--senal);
+    margin-top: 8px;
+}
+
+.lateral p { font-size: 17px; margin-top: 16px; }
+
+/* ---- Mitad derecha ---- */
+.formulario {
+    flex: 1;
+    background: var(--blanco);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.formulario h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 40px;
+    margin-bottom: 24px;
+}
+
+label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+input {
+    height: 48px;                         /* Inputs del diseño */
+    padding: 0 12px;
+    border: 1px solid var(--borde-input);
+    border-radius: 4px;
+    font: inherit;                        /* Hereda la fuente del body */
+    margin-bottom: 16px;
+}
+
+input:focus { outline: 2px solid var(--mono); }   /* Resalta el input activo */
+
+button {
+    height: 48px;                         /* Botón principal */
+    background: var(--mono);
+    color: var(--blanco);
+    border: none;
+    border-radius: 4px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+button:hover { background: #2A4E7A; }     /* Un poco más claro al pasar el ratón */
+
+.msg { margin-top: 16px; min-height: 20px; }   /* Hueco fijo: no "salta" al aparecer texto */
+.msg.error { color: var(--freno); }       /* El JS añade estas clases según success */
+.msg.ok    { color: var(--ok); }
+
+.enlace { margin-top: 24px; color: var(--texto-sec); }
+.enlace a { color: var(--mono); font-weight: 600; }
+
+/* ---- Móvil: las dos mitades una encima de otra ---- */
+@media (max-width: 768px) {
+    .pantalla { flex-direction: column; }
+    .lateral  { padding: 32px 24px; }
+    .lateral h1 { font-size: 44px; }
+}
