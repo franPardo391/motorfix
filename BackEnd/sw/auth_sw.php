@@ -7,7 +7,7 @@ require DIR_CLASES . 'Usuario.php';                        // Carga el modelo Us
 require DIR_CLASES . 'Cliente.php';                        // Carga el modelo Cliente (lo usa el registro)
 
 $data    = json_decode(file_get_contents('php://input'), true);  // Lee el JSON que manda fetch() y lo convierte en array
-$action  = isset($data['action']) ? $data['action'] : null;      // Qué nos piden: 'login', 'registro' o 'logout'
+$action  = isset($data['action']) ? $data['action'] : null;      // 'login', 'registro', 'logout' o 'sesion'
 $arrData = isset($data['data'])   ? $data['data']   : array();   // Los campos del formulario (email, password...)
 
 
@@ -69,8 +69,20 @@ try {
         case 'logout':
             session_destroy();                       // Borra todo lo guardado en $_SESSION (Tema 2)
             $msg = 'Sesión cerrada.';
-            break;                        
+            break;                  
 
+        case 'sesion':                                                // ¿Quién está logueado ahora?
+            if (!isset($_SESSION['id_usuario'])) {                    // No hay login hecho
+                throw new Exception('No hay sesión iniciada.');
+            }
+            $datos = [[                                               // Lo sacamos de la sesión, no del navegador
+                'id_usuario' => $_SESSION['id_usuario'],
+                'nombre'     => $_SESSION['nombre'],
+                'rol'        => $_SESSION['rol']
+            ]];
+            $msg = 'Sesión activa.';                                  // Mensaje para la vista
+            break;
+            
         default:                                   // Si $action no coincide con ningún case
             $success = false;
             $msg     = 'Acción no soportada.';
