@@ -14,14 +14,15 @@ function comprobarSesion() {
     .then(function (res) { return res.json(); })
     .then(function (response) {
         if (!response.success || response.data[0].rol != 'Cliente') {   // Sin sesión, o no es Cliente
-            window.location.href = 'login.html';                    // Fuera: al login
+            window.location.href = 'login.html';                     // Fuera: al login
             return;                                                  // No sigue ejecutando nada más
         }
         var nombre = response.data[0].nombre;                        // El nombre viene de $_SESSION
         document.getElementById('nombreUsuario').innerHTML = nombre; // Barra superior
         document.getElementById('saludoNombre').innerHTML  = nombre; // "Hola, ..."
-        cargarVehiculos(); 
-        cargarCitas();                                               // Y también sus citas                                                  // Con la sesión OK, pedimos sus vehículos
+        cargarVehiculos();                                           // Con la sesión OK, pedimos sus vehículos
+        cargarCitas();                                               // Y también sus citas                                             
+        cargarFacturas();                                            // Y sus facturas
     })
     .catch(function (error) {
         console.error('Error:', error);
@@ -317,4 +318,82 @@ function guardarCita() {                                             // Botón "
         msg.innerHTML = 'Error de conexión con el servidor.';
         console.error('Error:', error);
     });
+}
+
+var facturas = [];                                                   // Guardamos la lista para el "Ver factura"
+
+function cargarFacturas() {
+    var url  = '../../BackEnd/sw/factura_sw.php';
+    var data = { action: 'get' };                                    // El servidor filtra por el cliente de la sesión
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        var tbody = document.getElementById('tablaFacturas');
+        tbody.innerHTML = '';
+
+        if (!response.success) {
+            tbody.innerHTML = '<tr><td colspan="6">' + response.msg + '</td></tr>';
+            return;
+        }
+        facturas = response.data;
+        if (facturas.length == 0) {
+            tbody.innerHTML = '<tr><td colspan="6">No tienes facturas todavía.</td></tr>';
+            return;
+        }
+
+        for (var i = 0; i < facturas.length; i++) {                  // Una fila por factura
+            var f = facturas[i];
+            tbody.innerHTML +=
+                '<tr>' +
+                    '<td>F-' + f.id_factura + '</td>' +
+                    '<td>' + formatearFechaCorta(f.fecha) + '</td>' +
+                    '<td><span class="placa">' + f.matricula + '</span></td>' +     // Del JOIN con vehiculo
+                    '<td>' + f.descripcion + '</td>' +                               // Concepto = motivo de la cita
+                    '<td class="total">' + euros(f.total) + '</td>' +
+                    '<td><button type="button" class="btn-sec" onclick="verFactura(' + f.id_factura + ')">Ver factura</button></td>' +
+                '</tr>';
+        }
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+}
+
+function verFactura(id) {                                            // Botón "Ver factura"
+    var f = null;
+    for (var i = 0; i < facturas.length; i++) {                      // La buscamos en la lista ya cargada
+        if (facturas[i].id_factura == id) {
+            f = facturas[i];
+        }
+    }
+    if (f == null) return;
+
+    var panel = document.getElementById('detalleFactura');
+    panel.innerHTML =
+        '<h3>Factura F-' + f.id_factura + ' · ' + formatearFechaCorta(f.fecha) + '</h3>' +
+        '<div class="linea"><span>Mano de obra</span><span>'   + euros(f.mano_obra)      + '</span></div>' +
+        '<div class="linea"><span>Repuestos</span><span>'      + euros(f.repuestos)      + '</span></div>' +
+        '<div class="linea"><span>Base imponible</span><span>' + euros(f.base_imponible) + '</span></div>' +
+        '<div class="linea"><span>IVA (21 %)</span><span>'     + euros(f.iva)            + '</span></div>' +
+        '<div class="linea final"><span>Total</span><span>'    + euros(f.total)          + '</span></div>' +
+        '<div class="acciones"><button type="button" class="btn-sec" onclick="cerrarFactura()">Cerrar</button></div>';
+    panel.classList.remove('oculto');
+}
+
+function cerrarFactura() {
+    document.getElementById('detalleFactura').classList.add('oculto');
+}
+
+function euros(cantidad) {                                           // 91.36 → "91,36 €"
+    return Number(cantidad).toFixed(2).replace('.', ',') + ' €';
+}
+
+function formatearFechaCorta(fecha) {                                // "2026-11-03" → "03/11/2026"
+    var dia = fecha.split('-');
+    return dia[2] + '/' + dia[1] + '/' + dia[0];
 }

@@ -169,6 +169,16 @@ body {
 
 .total { text-align: right; font-weight: 600; }   /* Importe de la factura */
 
+/* ---- Desglose de factura ---- */
+.linea {                                  /* Una fila del desglose: concepto a la izquierda, importe a la derecha */
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--linea);
+    max-width: 420px;
+}
+.linea.final { font-weight: 700; font-size: 17px; border-bottom: none; }   /* El total, destacado */
+
 /* ---- Móvil ---- */
 @media (max-width: 768px) {
     .barra, .contenido { padding-left: 16px; padding-right: 16px; }
