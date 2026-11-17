@@ -129,3 +129,71 @@ function limpiarFormulario() {                                       // Deja tod
     document.getElementById('kilometraje').value = '';
     document.getElementById('msg').innerHTML     = '';
 }
+function guardarVehiculo() {                                         // Botón "Guardar"
+    var msg = document.getElementById('msg');
+    var id  = document.getElementById('id_vehiculo').value;          // Vacío = nuevo, con número = editar
+
+    var datos = {                                                    // Mismas claves que lee vehiculo_sw.php
+        matricula:   document.getElementById('matricula').value,
+        marca:       document.getElementById('marca').value,
+        modelo:      document.getElementById('modelo').value,
+        anio:        document.getElementById('anio').value,
+        kilometraje: document.getElementById('kilometraje').value
+    };
+
+    var action = 'insert';                                           // Por defecto, añadir
+    if (id != '') {
+        action = 'update';                                           // Si hay id, es una edición
+        datos.id_vehiculo = id;                                      // y el servicio necesita saber cuál
+    }
+
+    var url  = '../../BackEnd/sw/vehiculo_sw.php';
+    var data = { action: action, data: datos };
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        if (response.success) {
+            ocultarFormulario();                                     // Todo OK: cerramos el formulario
+            cargarVehiculos();                                       // y repintamos la tabla con los datos nuevos
+        } else {
+            msg.className = 'msg error';                             // Error: se queda abierto y lo mostramos
+            msg.innerHTML = response.msg;                            // "Ya existe un vehículo con esa matrícula."...
+        }
+    })
+    .catch(function (error) {
+        msg.className = 'msg error';
+        msg.innerHTML = 'Error de conexión con el servidor.';
+        console.error('Error:', error);
+    });
+}
+
+function borrarVehiculo(id) {                                        // Botón "Borrar" de cada fila
+    if (!confirm('¿Seguro que quieres borrar este vehículo?')) {     // Ventana de confirmación del navegador
+        return;                                                      // Si pulsa Cancelar, no hacemos nada
+    }
+
+    var url  = '../../BackEnd/sw/vehiculo_sw.php';
+    var data = { action: 'delete', data: { id_vehiculo: id } };
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        if (response.success) {
+            cargarVehiculos();                                       // Repintamos: la fila desaparece
+        } else {
+            alert(response.msg);                                     // Por ejemplo, si tiene citas asociadas
+        }
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+}
