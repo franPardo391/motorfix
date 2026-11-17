@@ -20,7 +20,8 @@ function comprobarSesion() {
         var nombre = response.data[0].nombre;                        // El nombre viene de $_SESSION
         document.getElementById('nombreUsuario').innerHTML = nombre; // Barra superior
         document.getElementById('saludoNombre').innerHTML  = nombre; // "Hola, ..."
-        cargarVehiculos();                                           // Con la sesión OK, pedimos sus vehículos
+        cargarVehiculos(); 
+        cargarCitas();                                               // Y también sus citas                                                  // Con la sesión OK, pedimos sus vehículos
     })
     .catch(function (error) {
         console.error('Error:', error);
@@ -194,6 +195,126 @@ function borrarVehiculo(id) {                                        // Botón "
         }
     })
     .catch(function (error) {
+        console.error('Error:', error);
+    });
+}
+var ESTADOS = ['Pendiente', 'Asignada', 'En reparacion', 'Finalizada'];    // Igual que el ENUM de la BD
+var TEXTOS  = ['Pendiente', 'Asignada', 'En reparación', 'Finalizada'];    // Lo que se ve en pantalla (con tilde)
+
+function cargarCitas() {
+    var url  = '../../BackEnd/sw/cita_sw.php';
+    var data = { action: 'get' };                                    // El servidor filtra por el cliente de la sesión
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        var lista = document.getElementById('listaReparaciones');
+        lista.innerHTML = '';                                        // Vaciamos antes de pintar
+
+        if (!response.success) {
+            lista.innerHTML = '<p>' + response.msg + '</p>';
+            return;
+        }
+        if (response.data.length == 0) {
+            lista.innerHTML = '<p>No tienes citas todavía.</p>';
+            return;
+        }
+
+        for (var i = 0; i < response.data.length; i++) {             // Una tarjeta por cita
+            var c = response.data[i];
+            lista.innerHTML +=
+                '<div class="tarjeta">' +
+                    '<div class="info">' +
+                        '<span class="placa">' + c.matricula + '</span>' +                // Viene del JOIN con vehiculo
+                        '<div>' +
+                            '<strong>' + c.marca + ' ' + c.modelo + '</strong>' +
+                            '<div class="detalle">' + c.descripcion + '</div>' +
+                            '<div class="detalle">Cita el ' + formatearFecha(c.fecha) + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    pintarEstados(c.estado) +                                             // Barra Pendiente → Finalizada
+                '</div>';
+        }
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+}
+
+function pintarEstados(estado) {                                     // Devuelve el HTML de la barra de estado
+    var pos  = ESTADOS.indexOf(estado);                              // En qué paso está: 0, 1, 2 o 3
+    var html = '<div class="estados">';
+    for (var i = 0; i < ESTADOS.length; i++) {
+        var clase = 'paso';
+        if (i < pos)  clase += ' hecho';                             // Pasos anteriores: azul
+        if (i == pos) clase += ' actual';                            // Paso actual: amarillo
+        html += '<span class="' + clase + '">' + TEXTOS[i] + '</span>';
+    }
+    return html + '</div>';
+}
+
+function formatearFecha(fecha) {                                     // "2026-11-25 10:00:00" → "25/11/2026 10:00"
+    var partes = fecha.split(' ');                                   // ["2026-11-25", "10:00:00"]
+    var dia    = partes[0].split('-');                               // ["2026", "11", "25"]
+    return dia[2] + '/' + dia[1] + '/' + dia[0] + ' ' + partes[1].substring(0, 5);
+}
+function mostrarFormCita() {                                         // Botón "Pedir cita"
+    var select = document.getElementById('citaVehiculo');
+    select.innerHTML = '';                                           // Vaciamos las opciones
+    for (var i = 0; i < vehiculos.length; i++) {                     // Un <option> por cada coche suyo
+        var v = vehiculos[i];
+        select.innerHTML += '<option value="' + v.id_vehiculo + '">' +
+                            v.matricula + ' - ' + v.marca + ' ' + v.modelo + '</option>';
+    }
+
+    document.getElementById('citaFecha').value       = '';
+    document.getElementById('citaDescripcion').value = '';
+    var msg = document.getElementById('msgCita');
+    msg.innerHTML = '';
+    if (vehiculos.length == 0) {                                     // Sin coches no puede pedir cita
+        msg.className = 'msg error';
+        msg.innerHTML = 'Primero añade un vehículo.';
+    }
+    document.getElementById('formCita').classList.remove('oculto');
+}
+
+function ocultarFormCita() {                                         // Botón "Cancelar"
+    document.getElementById('formCita').classList.add('oculto');
+}
+
+function guardarCita() {                                             // Botón "Enviar solicitud"
+    var msg = document.getElementById('msgCita');
+    var datos = {                                                    // Mismas claves que lee cita_sw.php
+        id_vehiculo: document.getElementById('citaVehiculo').value,
+        fecha:       document.getElementById('citaFecha').value,     // "2026-11-25T10:00"
+        descripcion: document.getElementById('citaDescripcion').value
+    };
+
+    var url  = '../../BackEnd/sw/cita_sw.php';
+    var data = { action: 'insert', data: datos };
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        if (response.success) {
+            ocultarFormCita();                                       // Cerramos el formulario
+            cargarCitas();                                           // y aparece la tarjeta nueva en "Pendiente"
+        } else {
+            msg.className = 'msg error';                             // Se queda abierto con el error
+            msg.innerHTML = response.msg;
+        }
+    })
+    .catch(function (error) {
+        msg.className = 'msg error';
+        msg.innerHTML = 'Error de conexión con el servidor.';
         console.error('Error:', error);
     });
 }

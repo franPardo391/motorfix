@@ -56,6 +56,9 @@ try {
             if (empty($descripcion)) {
                 throw new Exception('Describe el motivo de la cita.');
             }
+            if (empty($fecha) || strtotime($fecha) <= time()) {       // Sin fecha o fecha ya pasada
+            throw new Exception('Elige una fecha y hora a partir de ahora.');
+            }
 
             $cita = new Cita(null, $fecha, $descripcion, null, null, null, null, $id_vehiculo, null);  // Sin estado ni mecánico
             $id = $cita->insert();                                    // El modelo la crea como 'Pendiente'

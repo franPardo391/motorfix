@@ -31,8 +31,32 @@
         <section class="bloque">                                              <!-- Bloque · Tus reparaciones -->
             <div class="cabecera">
                 <h2>Tus reparaciones</h2>
-                <button type="button" class="btn-prim">Pedir cita</button>   <!-- Su onclick lo pondremos con cita_sw -->
+                <button type="button" class="btn-prim" onclick="mostrarFormCita()">Pedir cita</button>
             </div>
+
+            <div id="formCita" class="panel oculto">                          <!-- Oculto hasta pulsar "Pedir cita" -->
+                <h3>Pedir cita</h3>
+                <div class="campos">
+                    <div class="campo">
+                        <label for="citaVehiculo">Vehículo</label>
+                        <select id="citaVehiculo"></select>                   <!-- El JS mete un <option> por cada coche suyo -->
+                    </div>
+                    <div class="campo">
+                        <label for="citaFecha">Fecha y hora</label>
+                        <input type="datetime-local" id="citaFecha">          <!-- Calendario + hora del navegador -->
+                    </div>
+                </div>
+                <div class="campo campo-ancho">
+                    <label for="citaDescripcion">Motivo</label>
+                    <textarea id="citaDescripcion" rows="3" placeholder="Ej.: ruido al frenar, revisión de los 100.000 km..."></textarea>
+                </div>
+                <div class="acciones">
+                    <button type="button" class="btn-prim" onclick="guardarCita()">Enviar solicitud</button>
+                    <button type="button" class="btn-sec" onclick="ocultarFormCita()">Cancelar</button>
+                </div>
+                <p id="msgCita" class="msg"></p>                              <!-- Mensaje del JSON de cita_sw -->
+            </div>
+
             <div id="listaReparaciones"></div>                                <!-- El JS mete una tarjeta por cita -->
         </section>
 
@@ -93,4 +117,13 @@
             <table class="tabla">
                 <thead>
                     <tr>
-                        <th>Número</th><th>Fecha</th><th>Vehículo</th><th>Concepto</th><th
+                        <th>Número</th><th>Fecha</th><th>Vehículo</th><th>Concepto</th><th>Total</th><th></th>
+                    </tr>
+                </thead>
+                <tbody id="tablaFacturas"></tbody>                            <!-- El JS mete una fila por factura -->
+            </table>
+        </section>
+
+    </main>
+</body>
+</html>

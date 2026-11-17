@@ -93,6 +93,7 @@ body {
     font: 700 18px 'Barlow Condensed', sans-serif;
     background: var(--blanco);
 }
+
 /* ---- Botones ---- */
 .btn-prim, .btn-sec, .btn-borrar {
     height: 44px;
@@ -106,7 +107,7 @@ body {
 .btn-borrar { background: var(--blanco); color: var(--freno); border: 1.5px solid var(--freno); }
 .tabla .btn-sec, .tabla .btn-borrar { height: 36px; margin-left: 8px; }   /* Más pequeños dentro de la tabla */
 
-/* ---- Formulario de vehículo ---- */
+/* ---- Formularios (vehículo y cita) ---- */
 .panel {
     background: var(--blanco);
     border: 1px solid var(--linea);
@@ -116,20 +117,24 @@ body {
 }
 .panel h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; margin-bottom: 20px; }
 
-.campos { display: flex; gap: 16px; }     /* Los 5 campos en fila */
+.campos { display: flex; gap: 16px; }     /* Los campos en fila */
 .campo  { flex: 1; display: flex; flex-direction: column; gap: 6px; }
 .campo label { font-weight: 500; font-size: 14px; }
-.campo input {
+.campo input, .campo select, .campo textarea {   /* Mismo estilo para input, select y textarea */
     height: 48px;
     border: 1px solid var(--borde-input);
     border-radius: 4px;
     padding: 0 12px;
     font: 15px 'Barlow', sans-serif;
+    background: var(--blanco);
 }
+.campo textarea { height: auto; padding: 12px; resize: vertical; }   /* El textarea crece hacia abajo */
+.campo-ancho    { margin-top: 16px; }                                 /* El motivo ocupa todo el ancho */
+#listaReparaciones { margin-top: 16px; }                              /* Separación entre el formulario y las tarjetas */
 
 .acciones { display: flex; gap: 12px; margin-top: 20px; }
 
-.oculto { display: none; }                /* El JS pone/quita esta clase para mostrar el formulario */
+.oculto { display: none; }                /* El JS pone/quita esta clase para mostrar los formularios */
 
 /* ---- Mensajes (igual que en login) ---- */
 .msg       { margin-top: 12px; font-weight: 500; }
@@ -169,4 +174,5 @@ body {
     .barra, .contenido { padding-left: 16px; padding-right: 16px; }
     .campos { flex-direction: column; }   /* Campos uno debajo de otro */
     .tabla  { display: block; overflow-x: auto; }   /* La tabla se desplaza en horizontal si no cabe */
+    .tarjeta { flex-direction: column; align-items: flex-start; gap: 16px; }   /* Estados debajo de los datos */
 }
