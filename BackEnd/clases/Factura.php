@@ -99,17 +99,27 @@ class Factura {
     public static function getArray($filtros = array()) {
         try {
             $pdo = Conexion::getInstance()->getConexion();
-            $sql = "SELECT * FROM factura WHERE 1=1";
+            $sql = "SELECT f.*, c.descripcion, v.matricula, v.id_cliente
+                    FROM factura f
+                    JOIN cita c     ON f.id_cita = c.id_cita
+                    JOIN vehiculo v ON c.id_vehiculo = v.id_vehiculo
+                    WHERE 1=1";                                      // JOIN: concepto y matrícula para la vista
             $valores = [];
 
             if (!empty($filtros['id_factura'])) {                    // Una factura concreta
-                $sql .= " AND id_factura = :id_factura";
+                $sql .= " AND f.id_factura = :id_factura";
                 $valores[':id_factura'] = $filtros['id_factura'];
             }
             if (!empty($filtros['id_cita'])) {                       // La factura de una cita
-                $sql .= " AND id_cita = :id_cita";
+                $sql .= " AND f.id_cita = :id_cita";
                 $valores[':id_cita'] = $filtros['id_cita'];
             }
+            if (!empty($filtros['id_cliente'])) {                    // Las facturas de un cliente (panel Cliente)
+                $sql .= " AND v.id_cliente = :id_cliente";
+                $valores[':id_cliente'] = $filtros['id_cliente'];
+            }
+
+            $sql .= " ORDER BY f.fecha DESC";                        // Las más recientes primero
 
             $stmt = $pdo->prepare($sql);
             $stmt->execute($valores);
@@ -117,7 +127,7 @@ class Factura {
         } catch (Exception $e) {
             throw new Exception($e->getMessage(), 1);
         }
-    }   
+    } 
 
 
 
