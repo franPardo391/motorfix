@@ -44,36 +44,50 @@ class Vehiculo {
         $sql = "INSERT INTO vehiculo (matricula, marca, modelo, anio, kilometraje, id_cliente)
                 VALUES (:matricula, :marca, :modelo, :anio, :kilometraje, :id_cliente)";
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            ':matricula'   => $this->matricula,
-            ':marca'       => $this->marca,
-            ':modelo'      => $this->modelo,
-            ':anio'        => $this->anio ?: null,                 // Opcionales: vacío → NULL
-            ':kilometraje' => $this->kilometraje ?: null,
-            ':id_cliente'  => $this->id_cliente
-        ]);
+        try {                                                          // Capturamos el error de la BD
+            $stmt->execute([
+                ':matricula'   => $this->matricula,
+                ':marca'       => $this->marca,
+                ':modelo'      => $this->modelo,
+                ':anio'        => $this->anio ?: null,                 // Opcionales: vacío → NULL
+                ':kilometraje' => $this->kilometraje ?: null,
+                ':id_cliente'  => $this->id_cliente
+            ]);
+        } catch (PDOException $e) {
+            if ($e->getCode() == 23000) {                              // 23000 = clave duplicada (UNIQUE)
+                throw new Exception('Ya existe un vehículo con esa matrícula.', 1);
+            }
+            throw new Exception('Error al guardar el vehículo.', 1);  // Otro error, sin detalles técnicos
+        }
 
         $this->id_vehiculo = $pdo->lastInsertId();
         return $this->id_vehiculo;
     }
 
-        public function update() {
+    public function update() {
         if (empty($this->id_vehiculo)) throw new Exception("El id del vehículo es obligatorio.", 1);
 
         $pdo = Conexion::getInstance()->getConexion();
         $sql = "UPDATE vehiculo SET matricula = :matricula, marca = :marca, modelo = :modelo,
                        anio = :anio, kilometraje = :kilometraje, id_cliente = :id_cliente
-                WHERE id_vehiculo = :id";                                    // Solo este vehículo
+                WHERE id_vehiculo = :id";                              // Solo este vehículo
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            ':matricula'   => $this->matricula,
-            ':marca'       => $this->marca,
-            ':modelo'      => $this->modelo,
-            ':anio'        => $this->anio ?: null,
-            ':kilometraje' => $this->kilometraje ?: null,
-            ':id_cliente'  => $this->id_cliente,
-            ':id'          => $this->id_vehiculo
-        ]);
+        try {                                                          // Capturamos el error de la BD
+            $stmt->execute([
+                ':matricula'   => $this->matricula,
+                ':marca'       => $this->marca,
+                ':modelo'      => $this->modelo,
+                ':anio'        => $this->anio ?: null,
+                ':kilometraje' => $this->kilometraje ?: null,
+                ':id_cliente'  => $this->id_cliente,
+                ':id'          => $this->id_vehiculo
+            ]);
+        } catch (PDOException $e) {
+            if ($e->getCode() == 23000) {                              // Matrícula repetida
+                throw new Exception('Ya existe un vehículo con esa matrícula.', 1);
+            }
+            throw new Exception('Error al modificar el vehículo.', 1);
+        }
         return $stmt->rowCount() > 0;
     }
 
@@ -92,11 +106,11 @@ class Vehiculo {
             $sql = "SELECT * FROM vehiculo WHERE 1=1";
             $valores = [];
 
-            if (!empty($filtros['id_vehiculo'])) {                         // Un vehículo concreto
+            if (!empty($filtros['id_vehiculo'])) {                     // Un vehículo concreto
                 $sql .= " AND id_vehiculo = :id_vehiculo";
                 $valores[':id_vehiculo'] = $filtros['id_vehiculo'];
             }
-            if (!empty($filtros['id_cliente'])) {                          // Los coches de un cliente (relación 1:N)
+            if (!empty($filtros['id_cliente'])) {                      // Los coches de un cliente (relación 1:N)
                 $sql .= " AND id_cliente = :id_cliente";
                 $valores[':id_cliente'] = $filtros['id_cliente'];
             }
@@ -109,4 +123,4 @@ class Vehiculo {
         }
     }
 
-}   // Cierra la clasex
+}   
