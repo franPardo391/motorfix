@@ -38,6 +38,50 @@
         <section id="seccionClientes" class="bloque oculto">
             <div class="cabecera">
                 <h2>Clientes</h2>
+                <div class="filtros">                                         <!-- Buscador + botón a la derecha -->
+                    <input type="text" id="buscarDni" placeholder="Buscar por DNI" maxlength="9">
+                    <button type="button" class="btn-sec" onclick="cargarClientes()">Buscar</button>
+                    <button type="button" class="btn-prim" onclick="mostrarFormCliente()">Nuevo cliente</button>
+                </div>
+            </div>
+
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>DNI</th><th>Nombre</th><th>Teléfono</th><th>Cuenta web</th><th></th>
+                    </tr>
+                </thead>
+                <tbody id="tablaClientes"></tbody>                            <!-- El JS mete una fila por cliente -->
+            </table>
+
+            <div id="formCliente" class="panel oculto">                       <!-- Oculto hasta pulsar Nuevo o Editar -->
+                <h3 id="tituloFormCliente">Nuevo cliente</h3>
+                <input type="hidden" id="id_cliente">                         <!-- Vacío = insert, con número = update -->
+
+                <div class="campos">
+                    <div class="campo">
+                        <label for="dni">DNI</label>
+                        <input type="text" id="dni" placeholder="12345678Z" maxlength="9">
+                    </div>
+                    <div class="campo">
+                        <label for="nombre">Nombre</label>
+                        <input type="text" id="nombre" placeholder="Nombre y apellidos">
+                    </div>
+                    <div class="campo">
+                        <label for="telefono">Teléfono</label>
+                        <input type="text" id="telefono" placeholder="600000000">
+                    </div>
+                </div>
+                <div class="campo campo-ancho">
+                    <label for="direccion">Dirección</label>
+                    <input type="text" id="direccion" placeholder="C/ Mayor 1">
+                </div>
+
+                <div class="acciones">
+                    <button type="button" class="btn-prim" onclick="guardarCliente()">Guardar</button>
+                    <button type="button" class="btn-sec" onclick="ocultarFormCliente()">Cancelar</button>
+                </div>
+                <p id="msgCliente" class="msg"></p>                           <!-- Mensaje del JSON de cliente_sw -->
             </div>
         </section>
 
