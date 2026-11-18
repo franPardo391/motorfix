@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">   <!-- Para que se adapte al móvil -->
+    <title>MotorFix - Panel Oficina</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">  <!-- Tipografías del diseño -->
+    <link rel="stylesheet" href="../css/oficina.css">                         <!-- Estilos de esta vista -->
+    <script src="../js/oficina.js"></script>                                  <!-- View controller de esta vista -->
+</head>
+<body>
+
+    <header class="barra">                                                    <!-- Barra azul superior -->
+        <div class="marca">
+            <span class="logo">MotorFix</span>
+            <span class="rol">Oficina</span>
+        </div>
+        <nav class="pestanas">                                                <!-- Menú: cada botón muestra su sección -->
+            <button type="button" id="pestanaCitas"       class="pestana activa" onclick="mostrarSeccion('Citas')">Citas</button>
+            <button type="button" id="pestanaClientes"    class="pestana" onclick="mostrarSeccion('Clientes')">Clientes</button>
+            <button type="button" id="pestanaVehiculos"   class="pestana" onclick="mostrarSeccion('Vehiculos')">Vehículos</button>
+            <button type="button" id="pestanaFacturacion" class="pestana" onclick="mostrarSeccion('Facturacion')">Facturación</button>
+        </nav>
+        <div class="usuario">
+            <span id="nombreUsuario"></span>                                  <!-- El JS pone el nombre (de la sesión) -->
+            <button type="button" class="btn-barra" onclick="logout()">Cerrar sesión</button>
+        </div>
+    </header>
+
+    <main class="contenido">
+
+        <section id="seccionCitas" class="bloque">                            <!-- Visible al entrar -->
+            <div class="cabecera">
+                <h2>Citas por asignar</h2>
+            </div>
+        </section>
+
+        <section id="seccionClientes" class="bloque oculto">
+            <div class="cabecera">
+                <h2>Clientes</h2>
+            </div>
+        </section>
+
+        <section id="seccionVehiculos" class="bloque oculto">
+            <div class="cabecera">
+                <h2>Vehículos</h2>
+            </div>
+        </section>
+
+        <section id="seccionFacturacion" class="bloque oculto">
+            <div class="cabecera">
+                <h2>Facturación</h2>
+            </div>
+        </section>
+
+    </main>
+</body>
+</html>
