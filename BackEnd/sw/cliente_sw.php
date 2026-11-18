@@ -46,6 +46,36 @@ try {
             $datos = [['id_cliente' => $id]];
             $msg   = 'Cliente añadido correctamente.';
             break;
+        case 'update':                                                // Editar un cliente
+            $id_cliente = isset($arrData['id_cliente']) ? $arrData['id_cliente'] : null;
+            if (empty($id_cliente)) {
+                throw new Exception('Falta el cliente a modificar.');
+            }
+            $encontrados = Cliente::getArray(['id_cliente' => $id_cliente]);   // ¿Existe?
+            if (count($encontrados) == 0) {
+                throw new Exception('Cliente no encontrado.');
+            }
+
+            $dni = isset($arrData['dni']) ? strtoupper(trim($arrData['dni'])) : '';
+            if (strlen($dni) != 9) {
+                throw new Exception('El DNI debe tener 9 caracteres.');
+            }
+            $mismoDni = Cliente::getArray(['dni' => $dni]);           // ¿Otro cliente tiene ya ese DNI?
+            if (count($mismoDni) > 0 && $mismoDni[0]['id_cliente'] != $id_cliente) {
+                throw new Exception('Ya existe otro cliente con ese DNI.');
+            }
+
+            $cliente = new Cliente(
+                $id_cliente,
+                $dni,
+                isset($arrData['nombre'])    ? trim($arrData['nombre'])    : '',
+                isset($arrData['telefono'])  ? trim($arrData['telefono'])  : '',
+                isset($arrData['direccion']) ? trim($arrData['direccion']) : '',
+                $encontrados[0]['id_usuario']                         // La cuenta web no cambia: la de la BD
+            );
+            $cliente->update();
+            $msg = 'Cliente modificado correctamente.';
+            break;
 
         default:                                                      // Acción que no existe
             $success = false;
