@@ -3,6 +3,8 @@ header('Content-Type: application/json; charset=utf-8');   // La respuesta siemp
 require __DIR__ . '/../auth.inc.php';                       // Sin sesión: JSON de error y exit()
 require __DIR__ . '/../conf.php';                           // Datos de la BD y DIR_CLASES
 require DIR_CLASES . 'Cliente.php';                         // Modelo que vamos a usar
+require DIR_CLASES . 'Vehiculo.php';                        // Para saber si el cliente tiene vehículos
+
 
 $data    = json_decode(file_get_contents('php://input'), true);  // JSON de fetch() convertido en array
 $action  = isset($data['action']) ? $data['action'] : null;      // 'get', 'insert', 'update', 'delete'
@@ -75,6 +77,26 @@ try {
             );
             $cliente->update();
             $msg = 'Cliente modificado correctamente.';
+            break;
+        case 'delete':                                                // Borrar un cliente
+            $id_cliente = isset($arrData['id_cliente']) ? $arrData['id_cliente'] : null;
+            if (empty($id_cliente)) {
+                throw new Exception('Falta el cliente a borrar.');
+            }
+            $encontrados = Cliente::getArray(['id_cliente' => $id_cliente]);   // ¿Existe?
+            if (count($encontrados) == 0) {
+                throw new Exception('Cliente no encontrado.');
+            }
+            if (!empty($encontrados[0]['id_usuario'])) {              // Tiene cuenta web
+                throw new Exception('Este cliente tiene cuenta web; no se puede borrar desde Oficina.');
+            }
+            if (count(Vehiculo::getArray(['id_cliente' => $id_cliente])) > 0) {
+                throw new Exception('El cliente tiene vehículos. Bórralos antes.');  // Evita el error 23000
+            }
+
+            $cliente = new Cliente($id_cliente);                      // Para borrar basta con el id
+            $cliente->delete();
+            $msg = 'Cliente borrado correctamente.';
             break;
 
         default:                                                      // Acción que no existe
