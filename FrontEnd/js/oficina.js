@@ -96,3 +96,110 @@ function cargarClientes() {
         console.error('Error:', error);
     });
 }
+
+function mostrarFormCliente() {                                      // Botón "Nuevo cliente"
+    limpiarFormCliente();
+    document.getElementById('tituloFormCliente').innerHTML = 'Nuevo cliente';
+    document.getElementById('formCliente').classList.remove('oculto');    // Quita display:none → se ve
+}
+
+function ocultarFormCliente() {                                      // Botón "Cancelar"
+    document.getElementById('formCliente').classList.add('oculto');
+}
+
+function limpiarFormCliente() {                                      // Deja todos los campos en blanco
+    document.getElementById('id_cliente').value = '';                // Sin id → al guardar será un insert
+    document.getElementById('dni').value        = '';
+    document.getElementById('nombre').value     = '';
+    document.getElementById('telefono').value   = '';
+    document.getElementById('direccion').value  = '';
+    document.getElementById('msgCliente').innerHTML = '';
+}
+
+function editarCliente(id) {                                         // Botón "Editar" de cada fila
+    var c = null;
+    for (var i = 0; i < clientes.length; i++) {                      // Lo buscamos en la lista ya cargada
+        if (clientes[i].id_cliente == id) {
+            c = clientes[i];
+        }
+    }
+    if (c == null) return;
+
+    limpiarFormCliente();
+    document.getElementById('id_cliente').value = c.id_cliente;      // Con id → al guardar será un update
+    document.getElementById('dni').value        = c.dni;
+    document.getElementById('nombre').value     = c.nombre;
+    document.getElementById('telefono').value   = c.telefono;
+    document.getElementById('direccion').value  = c.direccion;
+    document.getElementById('tituloFormCliente').innerHTML = 'Editar cliente';
+    document.getElementById('formCliente').classList.remove('oculto');
+}
+
+function guardarCliente() {                                          // Botón "Guardar"
+    var msg = document.getElementById('msgCliente');
+    var id  = document.getElementById('id_cliente').value;           // Vacío = nuevo, con número = editar
+
+    var datos = {                                                    // Mismas claves que lee cliente_sw.php
+        dni:       document.getElementById('dni').value,
+        nombre:    document.getElementById('nombre').value,
+        telefono:  document.getElementById('telefono').value,
+        direccion: document.getElementById('direccion').value
+    };
+
+    var action = 'insert';
+    if (id != '') {
+        action = 'update';
+        datos.id_cliente = id;                                       // El servicio necesita saber cuál
+    }
+
+    var url  = '../../BackEnd/sw/cliente_sw.php';
+    var data = { action: action, data: datos };
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        if (response.success) {
+            ocultarFormCliente();                                    // Todo OK: cerramos el formulario
+            cargarClientes();                                        // y repintamos la tabla
+        } else {
+            msg.className = 'msg error';                             // "Ya existe un cliente con ese DNI."...
+            msg.innerHTML = response.msg;
+        }
+    })
+    .catch(function (error) {
+        msg.className = 'msg error';
+        msg.innerHTML = 'Error de conexión con el servidor.';
+        console.error('Error:', error);
+    });
+}
+
+function borrarCliente(id) {                                         // Botón "Borrar" de cada fila
+    if (!confirm('¿Seguro que quieres borrar este cliente?')) {
+        return;                                                      // Si pulsa Cancelar, no hacemos nada
+    }
+
+    var url  = '../../BackEnd/sw/cliente_sw.php';
+    var data = { action: 'delete', data: { id_cliente: id } };
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        if (response.success) {
+            cargarClientes();                                        // La fila desaparece
+        } else {
+            alert(response.msg);                                     // "Este cliente tiene cuenta web..."
+        }
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+}
+
