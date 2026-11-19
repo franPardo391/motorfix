@@ -166,7 +166,7 @@ body {
 
 /* ---- Buscador / filtros de la cabecera ---- */
 .filtros { display: flex; gap: 12px; }       /* Input y botones en fila */
-.filtros input {
+.filtros input, .filtros select {
     height: 44px;                            /* Mismo alto que los botones */
     border: 1px solid var(--borde-input);
     border-radius: 4px;

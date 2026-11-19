@@ -88,8 +88,62 @@
         <section id="seccionVehiculos" class="bloque oculto">
             <div class="cabecera">
                 <h2>Vehículos</h2>
+                <div class="filtros">
+                    <select id="filtroCliente" onchange="cargarVehiculos()"></select>   <!-- El JS mete "Todos" + un option por cliente -->
+                    <button type="button" class="btn-prim" onclick="mostrarFormVehiculo()">Nuevo vehículo</button>
+                </div>
+            </div>
+
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>Matrícula</th><th>Marca</th><th>Modelo</th><th>Cliente</th><th>Kilómetros</th><th></th>
+                    </tr>
+                </thead>
+                <tbody id="tablaVehiculos"></tbody>                           <!-- El JS mete una fila por vehículo -->
+            </table>
+
+            <div id="formVehiculo" class="panel oculto">                      <!-- Oculto hasta pulsar Nuevo o Editar -->
+                <h3 id="tituloFormVehiculo">Nuevo vehículo</h3>
+                <input type="hidden" id="id_vehiculo">                        <!-- Vacío = insert, con número = update -->
+
+                <div class="campos">
+                    <div class="campo">
+                        <label for="vehiculoCliente">Cliente</label>
+                        <select id="vehiculoCliente"></select>                <!-- Dueño del coche (solo al crear) -->
+                    </div>
+                    <div class="campo">
+                        <label for="matricula">Matrícula</label>
+                        <input type="text" id="matricula" placeholder="1234ABC" maxlength="10">
+                    </div>
+                    <div class="campo">
+                        <label for="marca">Marca</label>
+                        <input type="text" id="marca" placeholder="Seat">
+                    </div>
+                </div>
+                <div class="campos campo-ancho">
+                    <div class="campo">
+                        <label for="modelo">Modelo</label>
+                        <input type="text" id="modelo" placeholder="Ibiza">
+                    </div>
+                    <div class="campo">
+                        <label for="anio">Año</label>
+                        <input type="number" id="anio" placeholder="2018">
+                    </div>
+                    <div class="campo">
+                        <label for="kilometraje">Kilómetros</label>
+                        <input type="number" id="kilometraje" placeholder="85000">
+                    </div>
+                </div>
+
+                <div class="acciones">
+                    <button type="button" class="btn-prim" onclick="guardarVehiculo()">Guardar</button>
+                    <button type="button" class="btn-sec" onclick="ocultarFormVehiculo()">Cancelar</button>
+                </div>
+                <p id="msgVehiculo" class="msg"></p>                          <!-- Mensaje del JSON de vehiculo_sw -->
             </div>
         </section>
+
 
         <section id="seccionFacturacion" class="bloque oculto">
             <div class="cabecera">
