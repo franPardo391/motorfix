@@ -5,6 +5,7 @@ require __DIR__ . '/../conf.php';                           // Datos de la BD y 
 require DIR_CLASES . 'Cita.php';                            // Modelo principal de este servicio
 require DIR_CLASES . 'Vehiculo.php';                        // Para comprobar que el coche es del cliente
 require DIR_CLASES . 'Cliente.php';                         // Para saber qué cliente es el usuario
+require DIR_CLASES . 'Usuario.php';                         // Para comprobar que el id_mecanico es un mecánico
 
 $data    = json_decode(file_get_contents('php://input'), true);  // JSON de fetch() convertido en array
 $action  = isset($data['action']) ? $data['action'] : null;      // 'get', 'insert'...
@@ -65,6 +66,38 @@ try {
             $datos = [['id_cita' => $id]];
             $msg   = 'Cita solicitada correctamente. El taller la revisará.';
             break;
+        case 'update':                                                // Oficina: asignar o cambiar mecánico
+            if ($rol == 'Cliente') {                                  // El cliente no puede tocar citas
+                throw new Exception('No tienes permiso para modificar citas.');
+            }
+            $id_cita     = isset($arrData['id_cita'])     ? $arrData['id_cita']     : null;
+            $id_mecanico = isset($arrData['id_mecanico']) ? $arrData['id_mecanico'] : null;
+
+            if (empty($id_cita)) {                                    // Sin id, getArray devolvería TODAS
+                throw new Exception('Cita no encontrada.');
+            }
+            $encontradas = Cita::getArray(['id_cita' => $id_cita]);   // Comprobamos que existe
+            if (count($encontradas) == 0) {
+                throw new Exception('Cita no encontrada.');
+            }
+            $actual = $encontradas[0];                                // La cita tal como está en la BD
+
+            if ($actual['estado'] != 'Pendiente' && $actual['estado'] != 'Asignada') {
+                throw new Exception('Solo se puede asignar mecánico a citas pendientes o asignadas.');
+            }
+            if (empty($id_mecanico) || count(Usuario::getArray(['id_usuario' => $id_mecanico, 'rol' => 'Mecanico'])) == 0) {
+                throw new Exception('Elige un mecánico.');            // Vacío o no es un mecánico de verdad
+            }
+
+            $cita = new Cita($actual['id_cita'], $actual['fecha'], $actual['descripcion'], 'Asignada',
+                             $actual['horas'], $actual['piezas'], $actual['importe_repuesto'],
+                             $actual['id_vehiculo'], $id_mecanico);   // Todo de la BD menos estado y mecánico
+            $cita->update();
+            $datos = [['id_cita' => $id_cita]];
+            $msg   = 'Mecánico asignado correctamente.';
+            break;
+
+
 
         default:                                                      // Acción que no existe
             $success = false;
