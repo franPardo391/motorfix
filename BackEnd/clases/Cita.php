@@ -92,11 +92,13 @@ class Cita {
             $pdo = Conexion::getInstance()->getConexion();
 
             $sql = "SELECT c.*, v.matricula, v.marca, v.modelo, v.kilometraje, v.id_cliente,
-                           cl.nombre AS cliente
+                           cl.nombre AS cliente, f.id_factura
                     FROM cita c
                     JOIN vehiculo v ON c.id_vehiculo = v.id_vehiculo
                     JOIN cliente cl ON v.id_cliente = cl.id_cliente
-                    WHERE 1=1";                                      // JOIN: la vista ya tiene matrícula, km y nombre del cliente
+                    LEFT JOIN factura f ON f.id_cita = c.id_cita
+                    WHERE 1=1";                                      // id_factura = NULL si no tiene factura
+                                    // JOIN: la vista ya tiene matrícula, km y nombre del cliente
                                // JOIN: así la vista ya tiene la matrícula
             $valores = [];
 
@@ -119,6 +121,9 @@ class Cita {
             if (!empty($filtros['estado'])) {                        // Pendientes, En reparacion...
                 $sql .= " AND c.estado = :estado";
                 $valores[':estado'] = $filtros['estado'];
+            }
+            if (!empty($filtros['sin_factura'])) {                   // Citas que aún no tienen factura
+                $sql .= " AND f.id_factura IS NULL";
             }
 
             $sql .= " ORDER BY c.fecha DESC";                        // Las más recientes primero

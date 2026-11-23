@@ -45,6 +45,9 @@ try {
             if ($rol == 'Mecanico') {                                 // Su hoja de trabajo
                 $filtros['id_mecanico'] = $_SESSION['id_usuario'];    // Sale de la sesión, no del navegador
             }
+            if (!empty($arrData['sin_factura'])) {                    // Pestaña Facturación de Oficina
+                $filtros['sin_factura'] = true;
+            }
 
             $datos = Cita::getArray($filtros);                        // Con JOIN: trae matrícula, marca y modelo
             $msg   = 'Listado de citas.';
