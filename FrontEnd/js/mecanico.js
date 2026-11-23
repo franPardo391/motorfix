@@ -124,3 +124,37 @@ function elegirEstado(pos) {                                         // 1 = Asig
         document.getElementById('estado' + i).className = clase;
     }
 }
+
+function guardarCambios() {                                          // Botón "Guardar cambios"
+    var msg  = document.getElementById('msg');
+    var url  = '../../BackEnd/sw/cita_sw.php';
+    var data = {
+        action: 'update',
+        data: {
+            id_cita:          document.getElementById('id_cita').value,
+            estado:           document.getElementById('estado').value,            // El del botón elegido
+            horas:            document.getElementById('horas').value,
+            importe_repuesto: document.getElementById('importe_repuesto').value,
+            piezas:           document.getElementById('piezas').value
+        }                                                            // Ni fecha, ni vehículo, ni mecánico
+    };
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        if (response.success) {
+            msg.className = 'msg ok';
+            cargarCitas();                                           // La tarjeta muestra el estado nuevo
+        } else {
+            msg.className = 'msg error';
+        }
+        msg.innerHTML = response.msg;                                // "Cambios guardados." o el error del servidor
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+}
