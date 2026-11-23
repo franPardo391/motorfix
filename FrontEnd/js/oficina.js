@@ -20,7 +20,7 @@ function comprobarSesion() {
         document.getElementById('nombreUsuario').innerHTML = response.data[0].nombre;  // Nombre de $_SESSION
         cargarClientes();                                            // Con la sesión OK, pedimos los clientes
         cargarSelectClientes();                                      // Selects de clientes + tabla de vehículos
-
+        cargarMecanicos();                                           // Mecánicos y, después, la tabla de citas
 
     })
     .catch(function (error) {
@@ -413,6 +413,140 @@ function borrarVehiculo(id) {                                        // Botón "
         } else {
             alert(response.msg);
         }
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+}
+// ===== CITAS =====
+var mecanicos = [];                                                  // Para el <select> de cada fila
+var citas     = [];
+var ESTADOS = ['Pendiente', 'Asignada', 'En reparacion', 'Finalizada'];   // Como en la BD
+var TEXTOS  = ['Pendiente', 'Asignada', 'En reparación', 'Finalizada'];   // Como se ven en pantalla
+var CLASES  = ['pendiente', 'asignada', 'reparacion', 'finalizada'];      // Clase CSS del cuadradito
+
+function cargarMecanicos() {
+    var url  = '../../BackEnd/sw/usuario_sw.php';
+    var data = { action: 'get' };                                    // El servidor ya filtra rol = 'Mecanico'
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        if (response.success) {
+            mecanicos = response.data;
+        }
+        cargarCitas();                                               // Ahora sí: los selects ya tienen opciones
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+}
+
+function cargarCitas() {
+    var url  = '../../BackEnd/sw/cita_sw.php';
+    var data = { action: 'get', data: { estado: document.getElementById('filtroEstado').value } };  // Vacío = todas
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        var tbody = document.getElementById('tablaCitas');
+        tbody.innerHTML = '';
+
+        if (!response.success) {
+            tbody.innerHTML = '<tr><td colspan="7">' + response.msg + '</td></tr>';
+            return;
+        }
+        citas = response.data;
+        if (citas.length == 0) {
+            tbody.innerHTML = '<tr><td colspan="7">No hay citas.</td></tr>';
+            return;
+        }
+        for (var i = 0; i < citas.length; i++) {
+            var c   = citas[i];
+            var pos = ESTADOS.indexOf(c.estado);                     // Posición del estado: 0, 1, 2 o 3
+            var mecanico = nombreMecanico(c.id_mecanico);            // En reparación/Finalizada: solo el nombre
+            var boton    = '';
+            if (c.estado == 'Pendiente') {                           // Sin mecánico: select + "Asignar"
+                mecanico = selectMecanicos(c.id_cita, c.id_mecanico);
+                boton    = '<button type="button" class="btn-prim" onclick="asignarMecanico(' + c.id_cita + ')">Asignar</button>';
+            } else if (c.estado == 'Asignada') {                     // Ya tiene: select con el suyo + "Cambiar"
+                mecanico = selectMecanicos(c.id_cita, c.id_mecanico);
+                boton    = '<button type="button" class="btn-sec" onclick="asignarMecanico(' + c.id_cita + ')">Cambiar</button>';
+            }
+            tbody.innerHTML += '<tr>' +
+                '<td>' + formatearFecha(c.fecha) + '</td>' +
+                '<td><span class="placa">' + c.matricula + '</span></td>' +
+                '<td>' + c.cliente + '</td>' +
+                '<td>' + c.descripcion + '</td>' +
+                '<td><span class="cuadro ' + CLASES[pos] + '"></span>' + TEXTOS[pos] + '</td>' +
+                '<td>' + mecanico + '</td>' +
+                '<td>' + boton + '</td>' +
+            '</tr>';
+        }
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+}
+
+function selectMecanicos(id_cita, id_mecanico) {                     // <select id="mecanico2"> con todos los mecánicos
+    var html = '<select id="mecanico' + id_cita + '">' +
+               '<option value="">Elegir mecánico</option>';
+    for (var i = 0; i < mecanicos.length; i++) {
+        var m = mecanicos[i];
+        var marcado = (m.id_usuario == id_mecanico) ? ' selected' : '';   // El que ya tiene, elegido
+        html += '<option value="' + m.id_usuario + '"' + marcado + '>' + m.nombre + '</option>';
+    }
+    return html + '</select>';
+}
+
+function nombreMecanico(id) {                                        // id_mecanico → nombre
+    for (var i = 0; i < mecanicos.length; i++) {
+        if (mecanicos[i].id_usuario == id) return mecanicos[i].nombre;
+    }
+    return '-';                                                      // NULL: sin mecánico
+}
+
+function formatearFecha(fecha) {                                     // "2026-11-25 10:00:00" → "25/11/2026 10:00"
+    var partes = fecha.split(' ');
+    var dia    = partes[0].split('-');
+    return dia[2] + '/' + dia[1] + '/' + dia[0] + ' ' + partes[1].substring(0, 5);
+}
+function asignarMecanico(id) {                                       // Botón "Asignar" o "Cambiar" de la fila
+    var msg = document.getElementById('msgCita');
+    var id_mecanico = document.getElementById('mecanico' + id).value;   // El select de ESA fila
+
+    if (id_mecanico == '') {                                         // Comodidad: el servidor también lo valida
+        msg.className = 'msg error';
+        msg.innerHTML = 'Elige un mecánico.';
+        return;
+    }
+
+    var url  = '../../BackEnd/sw/cita_sw.php';
+    var data = { action: 'update', data: { id_cita: id, id_mecanico: id_mecanico } };   // Solo los dos ids
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        if (response.success) {
+            msg.className = 'msg ok';
+            cargarCitas();                                           // Repintamos: pasa a Asignada con "Cambiar"
+        } else {
+            msg.className = 'msg error';
+        }
+        msg.innerHTML = response.msg;                                // El mensaje lo pone el servidor
     })
     .catch(function (error) {
         console.error('Error:', error);
