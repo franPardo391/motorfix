@@ -188,6 +188,19 @@ body {
 }
 .pestana.activa { border-bottom-color: var(--senal); opacity: 1; font-weight: 600; }   /* Subrayado amarillo */
 
+/* Pestaña Citas */
+.subtitulo { color: var(--texto-sec); margin-top: 4px; }            /* "Revisa cada cita..." */
+.tabla select {                                                      /* Select de mecánico dentro de la tabla */
+    height: 36px; padding: 0 8px;
+    border: 1px solid var(--borde-input); border-radius: 4px;
+    font-family: 'Barlow', sans-serif; font-size: 15px;
+}
+.tabla .btn-prim { height: 36px; margin-left: 8px; }                 /* Igual de pequeño que .btn-sec en la tabla */
+.cuadro { display: inline-block; width: 10px; height: 10px; margin-right: 8px; }   /* Cuadradito del estado */
+.cuadro.pendiente  { background: var(--borde-input); }               /* Gris */
+.cuadro.asignada   { background: var(--mono); }                      /* Azul */
+.cuadro.reparacion { background: var(--senal); }                     /* Amarillo */
+.cuadro.finalizada { background: var(--ok); }                        /* Verde */
 
 /* ---- Móvil ---- */
 @media (max-width: 768px) {

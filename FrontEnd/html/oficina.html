@@ -31,9 +31,32 @@
 
         <section id="seccionCitas" class="bloque">                            <!-- Visible al entrar -->
             <div class="cabecera">
-                <h2>Citas por asignar</h2>
+                <div>
+                    <h2>Citas por asignar</h2>
+                    <p class="subtitulo">Revisa cada cita y asígnale un mecánico.</p>
+                </div>
+                <div class="filtros">
+                    <select id="filtroEstado" onchange="cargarCitas()">       <!-- Al cambiar, se vuelve a pedir la lista -->
+                        <option value="">Todos los estados</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Asignada">Asignada</option>
+                        <option value="En reparacion">En reparación</option>  <!-- value como en la BD (sin tilde) -->
+                        <option value="Finalizada">Finalizada</option>
+                    </select>
+                </div>
             </div>
+
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>Fecha</th><th>Matrícula</th><th>Cliente</th><th>Motivo</th><th>Estado</th><th>Mecánico</th><th></th>
+                    </tr>
+                </thead>
+                <tbody id="tablaCitas"></tbody>                               <!-- El JS mete una fila por cita -->
+            </table>
+            <p id="msgCita" class="msg"></p>                                  <!-- Resultado de Asignar/Cambiar -->
         </section>
+
 
         <section id="seccionClientes" class="bloque oculto">
             <div class="cabecera">
