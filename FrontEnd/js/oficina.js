@@ -20,7 +20,9 @@ function comprobarSesion() {
         document.getElementById('nombreUsuario').innerHTML = response.data[0].nombre;  // Nombre de $_SESSION
         cargarClientes();                                            // Con la sesión OK, pedimos los clientes
         cargarSelectClientes();                                      // Selects de clientes + tabla de vehículos
-        cargarMecanicos();                                           // Mecánicos y, después, la tabla de citas
+        cargarMecanicos();  
+        cargarFacturar();                                            // Citas finalizadas sin factura
+                                         // Mecánicos y, después, la tabla de citas
 
     })
     .catch(function (error) {
@@ -551,4 +553,131 @@ function asignarMecanico(id) {                                       // Botón "
     .catch(function (error) {
         console.error('Error:', error);
     });
+}
+
+// ===== FACTURACIÓN =====
+var porFacturar = [];
+
+function cargarFacturar() {
+    var url  = '../../BackEnd/sw/cita_sw.php';
+    var data = { action: 'get', data: { estado: 'Finalizada', sin_factura: true } };
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        var lista = document.getElementById('listaFacturar');
+        lista.innerHTML = '';
+        if (!response.success) {
+            lista.innerHTML = '<p class="msg error">' + response.msg + '</p>';
+            return;
+        }
+        porFacturar = response.data;
+        if (porFacturar.length == 0) {
+            lista.innerHTML = '<p>No hay reparaciones pendientes de facturar.</p>';
+            return;
+        }
+        for (var i = 0; i < porFacturar.length; i++) {
+            var c = porFacturar[i];
+            lista.innerHTML +=
+                '<div class="tarjeta" id="facturar' + c.id_cita + '">' +
+                    '<div class="info">' +
+                        '<span class="placa">' + c.matricula + '</span>' +
+                        '<div>' +
+                            '<strong>' + c.cliente + '</strong>' +
+                            '<p class="detalle">' + c.descripcion + ', ' + c.horas + ' h</p>' +
+                        '</div>' +
+                    '</div>' +
+                    '<button type="button" class="btn-sec" onclick="prepararFactura(' + c.id_cita + ')">Preparar factura</button>' +
+                '</div>';
+        }
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+}
+
+function prepararFactura(id) {                                       // Pide al servidor los importes (no se guarda nada)
+    var c = null;
+    for (var i = 0; i < porFacturar.length; i++) {
+        document.getElementById('facturar' + porFacturar[i].id_cita).classList.remove('elegida');
+        if (porFacturar[i].id_cita == id) c = porFacturar[i];
+    }
+    document.getElementById('facturar' + id).classList.add('elegida');
+
+    var url  = '../../BackEnd/sw/factura_sw.php';
+    var data = { action: 'preparar', data: { id_cita: id } };
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        var msg = document.getElementById('msgFactura');
+        if (!response.success) {
+            msg.className = 'msg error';
+            msg.innerHTML = response.msg;
+            return;
+        }
+        msg.innerHTML = '';
+        var f = response.data[0];                                    // Importes calculados por Factura::calcularTotales()
+        var panel = document.getElementById('panelFactura');
+        panel.innerHTML =
+            '<h3>Nueva factura</h3>' +
+            '<p><span class="placa">' + c.matricula + '</span></p>' +
+            '<p class="detalle">Cliente: ' + c.cliente + ' · Fecha: ' + formatearFechaCorta(f.fecha) + '</p>' +
+            '<div class="linea"><span>Mano de obra (' + f.horas + ' h a ' + f.precio_hora + ' €/h)</span><span>' + euros(f.mano_obra) + '</span></div>' +
+            '<div class="linea"><span>Repuestos</span><span>'  + euros(f.repuestos)      + '</span></div>' +
+            '<div class="linea"><span>Subtotal</span><span>'   + euros(f.base_imponible) + '</span></div>' +
+            '<div class="linea"><span>IVA (21 %)</span><span>' + euros(f.iva)            + '</span></div>' +
+            '<div class="linea final"><span>Total</span><span>' + euros(f.total)         + '</span></div>' +
+            '<button type="button" class="btn-prim btn-ancho" onclick="emitirFactura(' + id + ')">Emitir factura</button>';
+        panel.classList.remove('oculto');
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+}
+
+function emitirFactura(id) {                                         // Ahora sí: se guarda en la BD
+    if (!confirm('¿Emitir la factura? Después no se podrá modificar la reparación.')) return;
+
+    var url  = '../../BackEnd/sw/factura_sw.php';
+    var data = { action: 'insert', data: { id_cita: id } };
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        var msg = document.getElementById('msgFactura');
+        if (response.success) {
+            msg.className = 'msg ok';
+            msg.innerHTML = response.msg + ' (F-' + response.data[0].id_factura + ')';
+            document.getElementById('panelFactura').classList.add('oculto');
+            cargarFacturar();                                        // La cita desaparece de la lista
+        } else {
+            msg.className = 'msg error';
+            msg.innerHTML = response.msg;
+        }
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+}
+
+function euros(cantidad) {                                           // 91.36 → "91,36 €" (igual que en cliente.js)
+    return Number(cantidad).toFixed(2).replace('.', ',') + ' €';
+}
+
+function formatearFechaCorta(fecha) {                                // "2026-11-23" → "23/11/2026"
+    var dia = fecha.split('-');
+    return dia[2] + '/' + dia[1] + '/' + dia[0];
 }

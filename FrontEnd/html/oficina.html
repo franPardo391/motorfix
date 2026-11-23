@@ -170,8 +170,16 @@
 
         <section id="seccionFacturacion" class="bloque oculto">
             <div class="cabecera">
-                <h2>Facturación</h2>
+                <div>
+                    <h2>Facturación</h2>
+                    <p class="subtitulo">Reparaciones terminadas que aún no tienen factura.</p>
+                </div>
             </div>
+            <div class="facturacion">                                         <!-- Dos columnas -->
+                <div id="listaFacturar" class="lista"></div>                  <!-- Tarjetas: una por cita a facturar -->
+                <div id="panelFactura" class="panel oculto"></div>            <!-- El JS pinta la factura preparada -->
+            </div>
+            <p id="msgFactura" class="msg"></p>
         </section>
 
     </main>

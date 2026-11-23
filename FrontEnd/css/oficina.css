@@ -202,6 +202,14 @@ body {
 .cuadro.reparacion { background: var(--senal); }                     /* Amarillo */
 .cuadro.finalizada { background: var(--ok); }                        /* Verde */
 
+/* Pestaña Facturación */
+.facturacion { display: flex; gap: 24px; align-items: flex-start; }
+.facturacion .lista  { flex: 1; }
+.facturacion .panel  { flex: 1; margin-top: 0; }
+.facturacion .linea  { max-width: none; }                            /* El desglose ocupa todo el panel */
+.tarjeta.elegida     { border: 2px solid var(--mono); }              /* La que se está preparando */
+.btn-ancho           { width: 100%; margin-top: 20px; }              /* "Emitir factura" */
+
 /* ---- Móvil ---- */
 @media (max-width: 768px) {
     .barra, .contenido { padding-left: 16px; padding-right: 16px; }
@@ -212,4 +220,6 @@ body {
     .pestanas { width: 100%; height: 44px; overflow-x: auto; }   /* Pestañas en su propia fila, con scroll si no caben */
     .cabecera { flex-direction: column; align-items: flex-start; gap: 12px; }   /* Título encima del buscador */
     .filtros  { flex-wrap: wrap; }
+    .facturacion { flex-direction: column; }                         /* Factura debajo de las tarjetas */
+    .facturacion .panel { width: 100%; }
 }
