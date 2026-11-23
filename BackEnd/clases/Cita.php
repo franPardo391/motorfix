@@ -91,10 +91,13 @@ class Cita {
         try {
             $pdo = Conexion::getInstance()->getConexion();
 
-            $sql = "SELECT c.*, v.matricula, v.marca, v.modelo, v.id_cliente
+            $sql = "SELECT c.*, v.matricula, v.marca, v.modelo, v.kilometraje, v.id_cliente,
+                           cl.nombre AS cliente
                     FROM cita c
                     JOIN vehiculo v ON c.id_vehiculo = v.id_vehiculo
-                    WHERE 1=1";                                      // JOIN: así la vista ya tiene la matrícula
+                    JOIN cliente cl ON v.id_cliente = cl.id_cliente
+                    WHERE 1=1";                                      // JOIN: la vista ya tiene matrícula, km y nombre del cliente
+                               // JOIN: así la vista ya tiene la matrícula
             $valores = [];
 
             if (!empty($filtros['id_cita'])) {                       // Una cita concreta
