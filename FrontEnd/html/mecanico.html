@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">   <!-- Para que se adapte al móvil -->
+    <title>MotorFix - Panel Mecánico</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">  <!-- Tipografías del diseño -->
+    <link rel="stylesheet" href="../css/mecanico.css">                        <!-- Estilos de esta vista -->
+    <script src="../js/mecanico.js"></script>                                 <!-- View controller de esta vista -->
+</head>
+<body>
+
+    <header class="barra">                                                    <!-- Barra azul superior -->
+        <div class="marca">
+            <span class="logo">MotorFix</span>
+            <span class="rol">Mecánico</span>
+        </div>
+        <div class="usuario">
+            <span id="nombreUsuario"></span>                                  <!-- El JS pone el nombre (de la sesión) -->
+            <button type="button" class="btn-barra" onclick="logout()">Cerrar sesión</button>
+        </div>
+    </header>
+
+    <main class="contenido">
+        <section class="saludo">
+            <h1>Tu hoja de trabajo</h1>
+            <p>Reparaciones asignadas a ti. Elige una para actualizar su estado, las horas y las piezas.</p>
+        </section>
+
+        <div class="hoja">
+            <div id="listaCitas" class="lista"></div>                         <!-- El JS mete una tarjeta por cita -->
+
+            <div id="detalleCita" class="panel oculto">                       <!-- Se ve al elegir una tarjeta -->
+                <input type="hidden" id="id_cita">                            <!-- Cita que se está editando -->
+                <input type="hidden" id="estado">                             <!-- Estado elegido con los botones -->
+
+                <div class="info">
+                    <span id="detPlaca" class="placa"></span>
+                    <div>
+                        <h3 id="detCoche"></h3>                               <!-- Marca y modelo -->
+                        <p id="detCliente" class="detalle"></p>               <!-- Cliente y kilómetros -->
+                    </div>
+                </div>
+
+                <div class="pidio">
+                    <strong>Lo que pidió el cliente</strong>
+                    <span id="detDescripcion"></span>
+                </div>
+
+                <div class="campo"><label>Estado</label></div>
+                <div class="botones-estado">                                  <!-- 1, 2, 3 = posición en ESTADOS -->
+                    <button type="button" id="estado1" class="paso" onclick="elegirEstado(1)">Asignada</button>
+                    <button type="button" id="estado2" class="paso" onclick="elegirEstado(2)">En reparación</button>
+                    <button type="button" id="estado3" class="paso" onclick="elegirEstado(3)">Finalizada</button>
+                </div>
+
+                <div class="campos">
+                    <div class="campo">
+                        <label for="horas">Horas trabajadas</label>
+                        <input type="number" id="horas" min="0" step="0.25" placeholder="0,0">
+                    </div>
+                    <div class="campo">
+                        <label for="importe_repuesto">Importe de repuestos (€)</label>
+                        <input type="number" id="importe_repuesto" min="0" step="0.01" placeholder="0,00">
+                    </div>
+                </div>
+                <div class="campo campo-ancho">
+                    <label for="piezas">Piezas y materiales usados</label>
+                    <textarea id="piezas" rows="4" placeholder="Escribe una pieza por línea"></textarea>
+                </div>
+
+                <div class="acciones">
+                    <button type="button" class="btn-prim" onclick="guardarCambios()">Guardar cambios</button>
+                </div>
+                <p id="msg" class="msg"></p>                                  <!-- "Cambios guardados" o el error -->
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>
