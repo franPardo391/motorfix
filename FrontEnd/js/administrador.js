@@ -22,7 +22,7 @@ function comprobarSesion() {
         document.getElementById('nombreUsuario').innerHTML = response.data[0].nombre;
         idSesion = response.data[0].id_usuario;
         cargarUsuarios();
-        
+        cargarMetricas();                                            // Números del taller
     })
     .catch(function (error) {
         console.error('Error:', error);
@@ -215,8 +215,15 @@ function cargarMetricas() {
     });
 }
 
-function euros(cantidad) {                                           // 91.36 → "91,36 €" (igual que en cliente.js)
-    return Number(cantidad).toFixed(2).replace('.', ',') + ' €';
+function euros(cantidad) {                                           // 1234.5 → "1.234,50 €"
+    var partes = Number(cantidad).toFixed(2).split('.');             // ["1234", "50"]
+    var entero = partes[0];
+    var miles  = '';
+    while (entero.length > 3) {                                      // De 3 en 3 cifras, desde la derecha
+        miles  = '.' + entero.slice(-3) + miles;                     // Últimas 3 cifras con su punto delante
+        entero = entero.slice(0, -3);                                // Quitamos esas 3 cifras
+    }
+    return entero + miles + ',' + partes[1] + ' €';
 }
 
 function borrarUsuario(id) {                                         // Botón "Borrar" de cada fila
