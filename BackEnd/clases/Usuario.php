@@ -42,12 +42,18 @@ class Usuario {
         $sql = "INSERT INTO usuario (nombre, email, password, rol)
                 VALUES (:nombre, :email, :password, :rol)";                  // Marcadores: nunca concatenar variables
         $stmt = $pdo->prepare($sql);                                         // Prepara la sentencia
-        $stmt->execute([
-            ':nombre'   => $this->nombre,                                    // Asocia cada marcador con su valor
-            ':email'    => $this->email,
-            ':password' => $this->password,
-            ':rol'      => $this->rol
-        ]);
+        try {
+            $stmt->execute([
+                ':nombre'   => $this->nombre,                                // Asocia cada marcador con su valor
+                ':email'    => $this->email,
+                ':password' => $this->password,
+                ':rol'      => $this->rol
+            ]);
+        } catch (PDOException $e) {
+            if ($e->getCode() == 23000) throw new Exception('Ya existe un usuario con ese email.', 1);   // email es UNIQUE
+            throw new Exception('Error al guardar el usuario.', 1);         // Sin detalles técnicos
+        }
+
 
         $this->id_usuario = $pdo->lastInsertId();                            // Guarda el id generado por MySQL
         return $this->id_usuario;                                            // Lo devuelve (return, nunca echo)
