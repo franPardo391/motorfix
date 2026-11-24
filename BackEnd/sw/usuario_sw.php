@@ -61,6 +61,24 @@ try {
             $datos = [['id_usuario' => $id_usuario]];
             $msg   = 'Rol actualizado correctamente.';
             break;
+        case 'insert':                                                // Admin: nuevo usuario del taller
+            if ($rol != 'Administrador') {
+                throw new Exception('Solo el administrador puede crear usuarios.');
+            }
+            $nombre    = isset($arrData['nombre'])   ? trim($arrData['nombre']) : '';
+            $email     = isset($arrData['email'])    ? trim($arrData['email'])  : '';
+            $password  = isset($arrData['password']) ? $arrData['password']    : '';
+            $nuevo_rol = isset($arrData['rol'])      ? $arrData['rol']          : '';
+
+            if (!in_array($nuevo_rol, ['Administrador', 'Oficina', 'Mecanico'])) {   // Cliente no: necesita ficha
+                throw new Exception('Elige un rol: Administrador, Oficina o Mecánico.');
+            }
+            $usuario = new Usuario(null, $nombre, $email, $password, $nuevo_rol);
+            $id = $usuario->insert();                                 // Valida, cifra con BCrypt y guarda
+            $datos = [['id_usuario' => $id]];
+            $msg   = 'Usuario creado correctamente.';
+            break;
+
 
         default:                                                      // Acción que no existe
             $success = false;
