@@ -22,6 +22,7 @@ function comprobarSesion() {
         document.getElementById('nombreUsuario').innerHTML = response.data[0].nombre;
         idSesion = response.data[0].id_usuario;
         cargarUsuarios();
+        
     })
     .catch(function (error) {
         console.error('Error:', error);
@@ -161,4 +162,58 @@ function guardarUsuario() {                                          // Botón "
     .catch(function (error) {
         console.error('Error:', error);
     });
+}
+
+// ===== MÉTRICAS =====
+function cargarMetricas() {
+    var url  = '../../BackEnd/sw/cita_sw.php';
+    var data = { action: 'get' };                                    // Admin: todas las citas
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        if (!response.success) return;
+        var pendiente = 0, asignada = 0, reparacion = 0, finalizada = 0;
+        for (var i = 0; i < response.data.length; i++) {             // Contamos cuántas hay de cada estado
+            var estado = response.data[i].estado;
+            if (estado == 'Pendiente')     pendiente++;
+            if (estado == 'Asignada')      asignada++;
+            if (estado == 'En reparacion') reparacion++;
+            if (estado == 'Finalizada')    finalizada++;
+        }
+        document.getElementById('numPendiente').innerHTML  = pendiente;
+        document.getElementById('numAsignada').innerHTML   = asignada;
+        document.getElementById('numReparacion').innerHTML = reparacion;
+        document.getElementById('numFinalizada').innerHTML = finalizada;
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+
+    fetch('../../BackEnd/sw/factura_sw.php', {                      // Segunda petición: las facturas
+        method: 'POST',
+        body: JSON.stringify({ action: 'get' }),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        if (!response.success) return;
+        var facturado = 0;
+        for (var i = 0; i < response.data.length; i++) {
+            facturado += Number(response.data[i].total);             // El total de cada factura ya viene de la BD
+        }
+        document.getElementById('numFacturas').innerHTML  = response.data.length;
+        document.getElementById('numFacturado').innerHTML = euros(facturado);
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+}
+
+function euros(cantidad) {                                           // 91.36 → "91,36 €" (igual que en cliente.js)
+    return Number(cantidad).toFixed(2).replace('.', ',') + ' €';
 }
