@@ -96,7 +96,12 @@ class Vehiculo {
 
         $pdo = Conexion::getInstance()->getConexion();
         $stmt = $pdo->prepare("DELETE FROM vehiculo WHERE id_vehiculo = :id");
-        $stmt->execute([':id' => $this->id_vehiculo]);
+        try {
+            $stmt->execute([':id' => $this->id_vehiculo]);
+        } catch (PDOException $e) {
+            if ($e->getCode() == 23000) throw new Exception('No se puede borrar: el vehículo tiene citas en el taller.', 1);   // FK de cita
+            throw new Exception('Error al borrar el vehículo.', 1);
+        }
         return $stmt->rowCount() > 0;
     }
 
