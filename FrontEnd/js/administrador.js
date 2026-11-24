@@ -1,0 +1,164 @@
+window.onload = function () {
+    comprobarSesion();
+};
+
+var idSesion = null;                                                 // Mi id: en mi fila no se puede cambiar el rol
+
+function comprobarSesion() {
+    var url  = '../../BackEnd/sw/auth_sw.php';
+    var data = { action: 'sesion' };
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        if (!response.success || response.data[0].rol != 'Administrador') {
+            window.location.href = 'login.html';
+            return;
+        }
+        document.getElementById('nombreUsuario').innerHTML = response.data[0].nombre;
+        idSesion = response.data[0].id_usuario;
+        cargarUsuarios();
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+}
+
+function logout() {
+    var url  = '../../BackEnd/sw/auth_sw.php';
+    var data = { action: 'logout' };
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function () {
+        window.location.href = 'login.html';
+    });
+}
+
+// ===== USUARIOS =====
+var ROLES       = ['Administrador', 'Oficina', 'Mecanico', 'Cliente'];   // Como en la BD
+var TEXTOS_ROL  = ['Administrador', 'Oficina', 'Mecánico', 'Cliente'];   // Como se ven
+
+function cargarUsuarios() {
+    var url  = '../../BackEnd/sw/usuario_sw.php';
+    var data = { action: 'get' };                                    // Sin filtro: todos
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        var tbody = document.getElementById('tablaUsuarios');
+        tbody.innerHTML = '';
+        if (!response.success) {
+            tbody.innerHTML = '<tr><td colspan="4">' + response.msg + '</td></tr>';
+            return;
+        }
+        for (var i = 0; i < response.data.length; i++) {
+            var u = response.data[i];
+            var celdaRol, boton;
+            if (u.id_usuario == idSesion) {                          // Mi fila: solo texto
+                celdaRol = TEXTOS_ROL[ROLES.indexOf(u.rol)] + ' (tú)';
+                boton    = '';
+            } else {
+                celdaRol = selectRol(u.id_usuario, u.rol);
+                boton    = '<button type="button" class="btn-sec" onclick="guardarRol(' + u.id_usuario + ')">Guardar</button>';
+            }
+            tbody.innerHTML += '<tr>' +
+                '<td>' + u.nombre + '</td>' +
+                '<td>' + u.email + '</td>' +
+                '<td>' + celdaRol + '</td>' +
+                '<td>' + boton + '</td>' +
+            '</tr>';
+        }
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+}
+
+function selectRol(id, rol) {                                        // <select id="rol6"> con su rol elegido
+    var html = '<select id="rol' + id + '">';
+    for (var i = 0; i < ROLES.length; i++) {
+        var marcado = (ROLES[i] == rol) ? ' selected' : '';
+        html += '<option value="' + ROLES[i] + '"' + marcado + '>' + TEXTOS_ROL[i] + '</option>';
+    }
+    return html + '</select>';
+}
+
+function guardarRol(id) {                                            // Botón "Guardar" de cada fila
+    var msg  = document.getElementById('msgUsuario');
+    var url  = '../../BackEnd/sw/usuario_sw.php';
+    var data = { action: 'update', data: { id_usuario: id, rol: document.getElementById('rol' + id).value } };
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        msg.className = response.success ? 'msg ok' : 'msg error';
+        msg.innerHTML = response.msg;
+        cargarUsuarios();                                            // Si falla, el select vuelve al rol real
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+}
+
+function mostrarFormUsuario() {                                      // Botón "Nuevo usuario"
+    document.getElementById('nombre').value   = '';
+    document.getElementById('email').value    = '';
+    document.getElementById('password').value = '';
+    document.getElementById('rol').value      = 'Mecanico';
+    document.getElementById('formUsuario').classList.remove('oculto');
+}
+
+function ocultarFormUsuario() {                                      // Botón "Cancelar"
+    document.getElementById('formUsuario').classList.add('oculto');
+}
+
+function guardarUsuario() {                                          // Botón "Guardar" del formulario
+    var msg  = document.getElementById('msgUsuario');
+    var url  = '../../BackEnd/sw/usuario_sw.php';
+    var data = {
+        action: 'insert',
+        data: {
+            nombre:   document.getElementById('nombre').value,
+            email:    document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            rol:      document.getElementById('rol').value
+        }
+    };
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        if (response.success) {
+            msg.className = 'msg ok';
+            ocultarFormUsuario();
+            cargarUsuarios();                                        // El nuevo aparece en la tabla
+        } else {
+            msg.className = 'msg error';
+        }
+        msg.innerHTML = response.msg;
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+}
