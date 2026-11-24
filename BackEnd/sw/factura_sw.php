@@ -4,6 +4,7 @@ require __DIR__ . '/../auth.inc.php';                       // Sin sesión: JSON
 require __DIR__ . '/../conf.php';                           // Datos de la BD y DIR_CLASES
 require DIR_CLASES . 'Factura.php';                         // Modelo de este servicio
 require DIR_CLASES . 'Cliente.php';                         // Para saber qué cliente es el usuario
+require DIR_CLASES . 'Cita.php';                            // Para leer las horas y repuestos de la cita
 
 $data    = json_decode(file_get_contents('php://input'), true);  // JSON de fetch() convertido en array
 $action  = isset($data['action']) ? $data['action'] : null;      // 'get'...
@@ -37,6 +38,49 @@ try {
             $datos = Factura::getArray($filtros);                     // Con JOIN: concepto y matrícula
             $msg   = 'Listado de facturas.';
             break;
+        case 'preparar':                                              // Calcula la factura SIN guardarla
+        case 'insert':                                                // Calcula y la guarda (emitir)
+            if ($rol == 'Cliente') {
+                throw new Exception('No tienes permiso para emitir facturas.');
+            }
+            $id_cita = isset($arrData['id_cita']) ? $arrData['id_cita'] : null;
+            if (empty($id_cita)) {
+                throw new Exception('Cita no encontrada.');
+            }
+            $encontradas = Cita::getArray(['id_cita' => $id_cita]);
+            if (count($encontradas) == 0) {
+                throw new Exception('Cita no encontrada.');
+            }
+            $cita = $encontradas[0];
+            if ($cita['estado'] != 'Finalizada') {
+                throw new Exception('Solo se pueden facturar reparaciones finalizadas.');
+            }
+            if (!empty($cita['id_factura'])) {                        // Viene del LEFT JOIN del F1
+                throw new Exception('Esta cita ya tiene factura.');
+            }
+
+            $mano_obra = round($cita['horas'] * PRECIO_HORA, 2);     // Horas × 40 €
+            $factura   = new Factura(null, date('Y-m-d'), $mano_obra, $cita['importe_repuesto'], $id_cita);
+            if ($action == 'insert') {
+                $factura->insert();                                   // insert() ya llama a calcularTotales()
+                $msg = 'Factura emitida correctamente.';
+            } else {
+                $factura->calcularTotales();                          // Solo calcula, no toca la BD
+                $msg = 'Factura preparada.';
+            }
+            $datos = [[
+                'id_factura'     => $factura->id_factura,             // null si solo se ha preparado
+                'fecha'          => $factura->fecha,
+                'horas'          => $cita['horas'],
+                'precio_hora'    => PRECIO_HORA,
+                'mano_obra'      => $factura->mano_obra,
+                'repuestos'      => $factura->repuestos,
+                'base_imponible' => $factura->base_imponible,
+                'iva'            => $factura->iva,
+                'total'          => $factura->total
+            ]];
+            break;
+
 
         default:                                                      // Acción que no existe
             $success = false;

@@ -7,3 +7,4 @@ define('DB_PASS', '');
 
 // Ruta a la carpeta de las clases
 define('DIR_CLASES', __DIR__ . '/clases/');
+define('PRECIO_HORA', 40);                                  // € por hora de mano de obra
