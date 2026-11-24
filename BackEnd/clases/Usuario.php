@@ -80,7 +80,12 @@ class Usuario {
 
         $pdo = Conexion::getInstance()->getConexion();
         $stmt = $pdo->prepare("DELETE FROM usuario WHERE id_usuario = :id");    // Borra solo esa fila
-        $stmt->execute([':id' => $this->id_usuario]);
+        try {
+            $stmt->execute([':id' => $this->id_usuario]);
+        } catch (PDOException $e) {
+            if ($e->getCode() == 23000) throw new Exception('No se puede borrar: tiene citas asignadas.', 1);   // FK cita.id_mecanico
+            throw new Exception('Error al borrar el usuario.', 1);
+        }
         return $stmt->rowCount() > 0;                                           // true si se ha borrado
     }
 
