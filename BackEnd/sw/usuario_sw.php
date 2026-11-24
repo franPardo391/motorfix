@@ -78,7 +78,25 @@ try {
             $datos = [['id_usuario' => $id]];
             $msg   = 'Usuario creado correctamente.';
             break;
-
+        case 'delete':                                                // Admin: borrar un usuario
+            if ($rol != 'Administrador') {
+                throw new Exception('Solo el administrador puede borrar usuarios.');
+            }
+            $id_usuario = isset($arrData['id_usuario']) ? $arrData['id_usuario'] : null;
+            if (empty($id_usuario)) {
+                throw new Exception('Usuario no encontrado.');
+            }
+            if ($id_usuario == $_SESSION['id_usuario']) {             // Siempre queda al menos un admin
+                throw new Exception('No puedes borrar tu propio usuario.');
+            }
+            if (count(Usuario::getArray(['id_usuario' => $id_usuario])) == 0) {
+                throw new Exception('Usuario no encontrado.');
+            }
+            $usuario = new Usuario($id_usuario);                      // Para borrar solo hace falta el id
+            $usuario->delete();                                       // Cliente: su ficha queda (ON DELETE SET NULL)
+            $datos = [['id_usuario' => $id_usuario]];
+            $msg   = 'Usuario borrado correctamente.';
+            break;
 
         default:                                                      // Acción que no existe
             $success = false;

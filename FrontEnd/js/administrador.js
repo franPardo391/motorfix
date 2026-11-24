@@ -73,7 +73,8 @@ function cargarUsuarios() {
                 boton    = '';
             } else {
                 celdaRol = selectRol(u.id_usuario, u.rol);
-                boton    = '<button type="button" class="btn-sec" onclick="guardarRol(' + u.id_usuario + ')">Guardar</button>';
+                boton    = '<button type="button" class="btn-sec" onclick="guardarRol(' + u.id_usuario + ')">Guardar</button>' +
+                           '<button type="button" class="btn-borrar" onclick="borrarUsuario(' + u.id_usuario + ')">Borrar</button>';
             }
             tbody.innerHTML += '<tr>' +
                 '<td>' + u.nombre + '</td>' +
@@ -216,4 +217,27 @@ function cargarMetricas() {
 
 function euros(cantidad) {                                           // 91.36 → "91,36 €" (igual que en cliente.js)
     return Number(cantidad).toFixed(2).replace('.', ',') + ' €';
+}
+
+function borrarUsuario(id) {                                         // Botón "Borrar" de cada fila
+    if (!confirm('¿Seguro que quieres borrar este usuario?')) return;
+
+    var msg  = document.getElementById('msgUsuario');
+    var url  = '../../BackEnd/sw/usuario_sw.php';
+    var data = { action: 'delete', data: { id_usuario: id } };
+
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (response) {
+        msg.className = response.success ? 'msg ok' : 'msg error';
+        msg.innerHTML = response.msg;
+        if (response.success) cargarUsuarios();                      // Desaparece de la tabla
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
 }
