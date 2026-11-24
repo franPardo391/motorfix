@@ -185,4 +185,6 @@ body {
     .campos { flex-direction: column; }   /* Campos uno debajo de otro */
     .tabla  { display: block; overflow-x: auto; }   /* La tabla se desplaza en horizontal si no cabe */
     .tarjeta { flex-direction: column; align-items: flex-start; gap: 16px; }   /* Estados debajo de los datos */
+    .estados { width: 100%; }                                         /* La barra ocupa el ancho de la tarjeta, no más */
+    .paso    { flex: 1 1 0; min-width: 0; padding: 6px 2px; font-size: 12px; text-align: center; }   /* 4 partes iguales */
 }
