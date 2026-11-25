@@ -6,7 +6,7 @@ require DIR_CLASES . 'Vehiculo.php';                        // Modelo que vamos 
 require DIR_CLASES . 'Cliente.php';                         // Para saber qué cliente es el usuario
 
 $data    = json_decode(file_get_contents('php://input'), true);  // JSON de fetch() convertido en array
-$action  = isset($data['action']) ? $data['action'] : null;      // 'get', 'insert'...
+$action  = isset($data['action']) ? $data['action'] : null;      // 'get', 'insert', 'update' o 'delete'
 $arrData = isset($data['data'])   ? $data['data']   : array();   // Campos del formulario
 
 $success = true;                                            // Respuesta por defecto

@@ -7,7 +7,7 @@ require DIR_CLASES . 'Cliente.php';                         // Para saber qué c
 require DIR_CLASES . 'Cita.php';                            // Para leer las horas y repuestos de la cita
 
 $data    = json_decode(file_get_contents('php://input'), true);  // JSON de fetch() convertido en array
-$action  = isset($data['action']) ? $data['action'] : null;      // 'get'...
+$action  = isset($data['action']) ? $data['action'] : null;      // 'get', 'preparar' o 'insert'
 $arrData = isset($data['data'])   ? $data['data']   : array();   // Datos que mande la vista
 
 $success = true;                                            // Respuesta por defecto
@@ -80,7 +80,6 @@ try {
                 'total'          => $factura->total
             ]];
             break;
-
 
         default:                                                      // Acción que no existe
             $success = false;

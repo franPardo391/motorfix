@@ -10,7 +10,6 @@ $data    = json_decode(file_get_contents('php://input'), true);  // Lee el JSON 
 $action  = isset($data['action']) ? $data['action'] : null;      // 'login', 'registro', 'logout' o 'sesion'
 $arrData = isset($data['data'])   ? $data['data']   : array();   // Los campos del formulario (email, password...)
 
-
 $success = true;                                   // Valores por defecto de la respuesta
 $msg     = '';
 $datos   = [];

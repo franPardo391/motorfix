@@ -54,7 +54,6 @@ class Usuario {
             throw new Exception('Error al guardar el usuario.', 1);         // Sin detalles técnicos
         }
 
-
         $this->id_usuario = $pdo->lastInsertId();                            // Guarda el id generado por MySQL
         return $this->id_usuario;                                            // Lo devuelve (return, nunca echo)
     }

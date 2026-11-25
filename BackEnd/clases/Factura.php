@@ -129,7 +129,4 @@ class Factura {
         }
     } 
 
-
-
-
 }   // Cierra la clase

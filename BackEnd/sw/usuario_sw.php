@@ -6,7 +6,7 @@ require DIR_CLASES . 'Usuario.php';                         // Modelo que vamos 
 require DIR_CLASES . 'Cliente.php';                         // Para saber si un usuario tiene ficha de cliente
 
 $data    = json_decode(file_get_contents('php://input'), true);  // JSON de fetch() convertido en array
-$action  = isset($data['action']) ? $data['action'] : null;      // 'get'...
+$action  = isset($data['action']) ? $data['action'] : null;      // 'get', 'insert', 'update' o 'delete'
 $arrData = isset($data['data'])   ? $data['data']   : array();   // Filtros o campos del formulario
 
 $success = true;                                            // Respuesta por defecto

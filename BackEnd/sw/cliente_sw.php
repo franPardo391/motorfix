@@ -5,7 +5,6 @@ require __DIR__ . '/../conf.php';                           // Datos de la BD y 
 require DIR_CLASES . 'Cliente.php';                         // Modelo que vamos a usar
 require DIR_CLASES . 'Vehiculo.php';                        // Para saber si el cliente tiene vehículos
 
-
 $data    = json_decode(file_get_contents('php://input'), true);  // JSON de fetch() convertido en array
 $action  = isset($data['action']) ? $data['action'] : null;      // 'get', 'insert', 'update', 'delete'
 $arrData = isset($data['data'])   ? $data['data']   : array();   // Campos del formulario

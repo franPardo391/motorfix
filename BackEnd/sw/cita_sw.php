@@ -9,7 +9,7 @@ require DIR_CLASES . 'Usuario.php';                         // Para comprobar qu
 require DIR_CLASES . 'Factura.php';                         // Para no tocar citas ya facturadas
 
 $data    = json_decode(file_get_contents('php://input'), true);  // JSON de fetch() convertido en array
-$action  = isset($data['action']) ? $data['action'] : null;      // 'get', 'insert'...
+$action  = isset($data['action']) ? $data['action'] : null;      // 'get', 'insert' o 'update'
 $arrData = isset($data['data'])   ? $data['data']   : array();   // Campos del formulario
 
 $success = true;                                            // Respuesta por defecto
@@ -49,7 +49,7 @@ try {
                 $filtros['sin_factura'] = true;
             }
 
-            $datos = Cita::getArray($filtros);                        // Con JOIN: trae matrícula, marca y modelo
+            $datos = Cita::getArray($filtros);                        // Con JOIN: matrícula, coche, km, cliente y si tiene factura
             $msg   = 'Listado de citas.';
             break;
 
@@ -144,8 +144,6 @@ try {
             $datos = [['id_cita' => $id_cita]];
             $msg   = 'Mecánico asignado correctamente.';
             break;
-
-
 
         default:                                                      // Acción que no existe
             $success = false;
