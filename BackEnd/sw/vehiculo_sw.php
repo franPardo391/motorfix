@@ -101,6 +101,9 @@ try {
             $msg     = 'Acción no soportada.';
     }
     
+} catch (PDOException $e) {                                           // Error de MySQL que no hemos previsto
+    $success = false;
+    $msg     = 'Error en la base de datos. Inténtalo de nuevo.';      // Nunca el texto técnico de MySQL
 } catch (Exception $e) {                                              // Cualquier throw acaba aquí
     $success = false;
     $msg     = $e->getMessage();
