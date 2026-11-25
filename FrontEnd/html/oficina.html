@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">   <!-- Para que se adapte al móvil -->
+    <title>MotorFix - Panel Oficina</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">  <!-- Tipografías del diseño -->
+    <link rel="stylesheet" href="../css/oficina.css">                         <!-- Estilos de esta vista -->
+    <script src="../js/oficina.js"></script>                                  <!-- View controller de esta vista -->
+</head>
+<body>
+
+    <header class="barra">                                                    <!-- Barra azul superior -->
+        <div class="marca">
+            <span class="logo">MotorFix</span>
+            <span class="rol">Oficina</span>
+        </div>
+        <nav class="pestanas">                                                <!-- Menú: cada botón muestra su sección -->
+            <button type="button" id="pestanaCitas"       class="pestana activa" onclick="mostrarSeccion('Citas')">Citas</button>
+            <button type="button" id="pestanaClientes"    class="pestana" onclick="mostrarSeccion('Clientes')">Clientes</button>
+            <button type="button" id="pestanaVehiculos"   class="pestana" onclick="mostrarSeccion('Vehiculos')">Vehículos</button>
+            <button type="button" id="pestanaFacturacion" class="pestana" onclick="mostrarSeccion('Facturacion')">Facturación</button>
+        </nav>
+        <div class="usuario">
+            <span id="nombreUsuario"></span>                                  <!-- El JS pone el nombre (de la sesión) -->
+            <button type="button" class="btn-barra" onclick="logout()">Cerrar sesión</button>
+        </div>
+    </header>
+
+    <main class="contenido">
+
+        <section id="seccionCitas" class="bloque">                            <!-- Visible al entrar -->
+            <div class="cabecera">
+                <div>
+                    <h2>Citas por asignar</h2>
+                    <p class="subtitulo">Revisa cada cita y asígnale un mecánico.</p>
+                </div>
+                <div class="filtros">
+                    <select id="filtroEstado" onchange="cargarCitas()">       <!-- Al cambiar, se vuelve a pedir la lista -->
+                        <option value="">Todos los estados</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Asignada">Asignada</option>
+                        <option value="En reparacion">En reparación</option>  <!-- value como en la BD (sin tilde) -->
+                        <option value="Finalizada">Finalizada</option>
+                    </select>
+                </div>
+            </div>
+
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>Fecha</th><th>Matrícula</th><th>Cliente</th><th>Motivo</th><th>Estado</th><th>Mecánico</th><th></th>
+                    </tr>
+                </thead>
+                <tbody id="tablaCitas"></tbody>                               <!-- El JS mete una fila por cita -->
+            </table>
+            <p id="msgCita" class="msg"></p>                                  <!-- Resultado de Asignar/Cambiar -->
+        </section>
+
+
+        <section id="seccionClientes" class="bloque oculto">
+            <div class="cabecera">
+                <h2>Clientes</h2>
+                <div class="filtros">                                         <!-- Buscador + botón a la derecha -->
+                    <input type="text" id="buscarDni" placeholder="Buscar por DNI" maxlength="9">
+                    <button type="button" class="btn-sec" onclick="cargarClientes()">Buscar</button>
+                    <button type="button" class="btn-prim" onclick="mostrarFormCliente()">Nuevo cliente</button>
+                </div>
+            </div>
+
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>DNI</th><th>Nombre</th><th>Teléfono</th><th>Cuenta web</th><th></th>
+                    </tr>
+                </thead>
+                <tbody id="tablaClientes"></tbody>                            <!-- El JS mete una fila por cliente -->
+            </table>
+
+            <div id="formCliente" class="panel oculto">                       <!-- Oculto hasta pulsar Nuevo o Editar -->
+                <h3 id="tituloFormCliente">Nuevo cliente</h3>
+                <input type="hidden" id="id_cliente">                         <!-- Vacío = insert, con número = update -->
+
+                <div class="campos">
+                    <div class="campo">
+                        <label for="dni">DNI</label>
+                        <input type="text" id="dni" placeholder="12345678Z" maxlength="9">
+                    </div>
+                    <div class="campo">
+                        <label for="nombre">Nombre</label>
+                        <input type="text" id="nombre" placeholder="Nombre y apellidos">
+                    </div>
+                    <div class="campo">
+                        <label for="telefono">Teléfono</label>
+                        <input type="text" id="telefono" placeholder="600000000">
+                    </div>
+                </div>
+                <div class="campo campo-ancho">
+                    <label for="direccion">Dirección</label>
+                    <input type="text" id="direccion" placeholder="C/ Mayor 1">
+                </div>
+
+                <div class="acciones">
+                    <button type="button" class="btn-prim" onclick="guardarCliente()">Guardar</button>
+                    <button type="button" class="btn-sec" onclick="ocultarFormCliente()">Cancelar</button>
+                </div>
+                <p id="msgCliente" class="msg"></p>                           <!-- Mensaje del JSON de cliente_sw -->
+            </div>
+        </section>
+
+        <section id="seccionVehiculos" class="bloque oculto">
+            <div class="cabecera">
+                <h2>Vehículos</h2>
+                <div class="filtros">
+                    <select id="filtroCliente" onchange="cargarVehiculos()"></select>   <!-- El JS mete "Todos" + un option por cliente -->
+                    <button type="button" class="btn-prim" onclick="mostrarFormVehiculo()">Nuevo vehículo</button>
+                </div>
+            </div>
+
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>Matrícula</th><th>Marca</th><th>Modelo</th><th>Cliente</th><th>Kilómetros</th><th></th>
+                    </tr>
+                </thead>
+                <tbody id="tablaVehiculos"></tbody>                           <!-- El JS mete una fila por vehículo -->
+            </table>
+
+            <div id="formVehiculo" class="panel oculto">                      <!-- Oculto hasta pulsar Nuevo o Editar -->
+                <h3 id="tituloFormVehiculo">Nuevo vehículo</h3>
+                <input type="hidden" id="id_vehiculo">                        <!-- Vacío = insert, con número = update -->
+
+                <div class="campos">
+                    <div class="campo">
+                        <label for="vehiculoCliente">Cliente</label>
+                        <select id="vehiculoCliente"></select>                <!-- Dueño del coche (solo al crear) -->
+                    </div>
+                    <div class="campo">
+                        <label for="matricula">Matrícula</label>
+                        <input type="text" id="matricula" placeholder="1234ABC" maxlength="10">
+                    </div>
+                    <div class="campo">
+                        <label for="marca">Marca</label>
+                        <input type="text" id="marca" placeholder="Seat">
+                    </div>
+                </div>
+                <div class="campos campo-ancho">
+                    <div class="campo">
+                        <label for="modelo">Modelo</label>
+                        <input type="text" id="modelo" placeholder="Ibiza">
+                    </div>
+                    <div class="campo">
+                        <label for="anio">Año</label>
+                        <input type="number" id="anio" placeholder="2018">
+                    </div>
+                    <div class="campo">
+                        <label for="kilometraje">Kilómetros</label>
+                        <input type="number" id="kilometraje" placeholder="85000">
+                    </div>
+                </div>
+
+                <div class="acciones">
+                    <button type="button" class="btn-prim" onclick="guardarVehiculo()">Guardar</button>
+                    <button type="button" class="btn-sec" onclick="ocultarFormVehiculo()">Cancelar</button>
+                </div>
+                <p id="msgVehiculo" class="msg"></p>                          <!-- Mensaje del JSON de vehiculo_sw -->
+            </div>
+        </section>
+
+
+        <section id="seccionFacturacion" class="bloque oculto">
+            <div class="cabecera">
+                <div>
+                    <h2>Facturación</h2>
+                    <p class="subtitulo">Reparaciones terminadas que aún no tienen factura.</p>
+                </div>
+            </div>
+            <div class="facturacion">                                         <!-- Dos columnas -->
+                <div id="listaFacturar" class="lista"></div>                  <!-- Tarjetas: una por cita a facturar -->
+                <div id="panelFactura" class="panel oculto"></div>            <!-- El JS pinta la factura preparada -->
+            </div>
+            <p id="msgFactura" class="msg"></p>
+        </section>
+
+    </main>
+</body>
+</html>
